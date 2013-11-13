@@ -15,10 +15,15 @@ String::isWhitespace = () ->
 	@.length > 0 and /^\W+$/.test(@)
 
 
+Array::merge = (secondArray) ->
+	Array::push.apply @, secondArray
+
+
 
 class TextBlock
-	constructor: (@text, currentContainedTextElements, tagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, offsetBlocks) ->
-		@text = @text
+	constructor: (text, currentContainedTextElements, tagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, offsetBlocks) ->
+		@text = text?.replace /^\s+|\n+$/g, ""
+		
 		@currentContainedTextElements = currentContainedTextElements
 		@numWords = numWords
 		@numWordsInAnchorText = numWordsInAnchorText
@@ -143,8 +148,8 @@ class BoilerpipeParser
 		@parser.parseComplete(html);
 		@endParsingDocument()
 		
-		for textBlock in @textBlocks
-			console.log("#{textBlock.description()}")
+		# for textBlock in @textBlocks
+		# 	console.log("#{textBlock.description()}")
 		
 		console.log("number of text blocks: #{@textBlocks.length}")
 		
@@ -163,6 +168,7 @@ class BoilerpipeParser
 			when IgnorableElementAction
 				@ignorableElementDepth++
 				@tagLevel++
+				console.log @tagLevel + "	startElement tag++ #{elementName}			changesTagLevel"
 				@flush = true
 			
 			
@@ -170,10 +176,12 @@ class BoilerpipeParser
 				@flushBlock()
 				@inBody++
 				@tagLevel++
+				console.log @tagLevel + "	startElement tag++ #{elementName}			changesTagLevel"
 			
 			when AnchorTextElementAction
 				@inAnchor++
 				@tagLevel++
+				console.log @tagLevel + "	startElement tag++ #{elementName}			changesTagLevel"
 				
 				if @inAnchor > 1
 					#  as nested A elements are not allowed per specification, we are probably
@@ -185,14 +193,12 @@ class BoilerpipeParser
 					@addToken(AnchorTextStart)
 			
 			
-			# when InlineWhitespaceElementAction
-				# @addWhitespaceIfNecessary()
-			
-			when InlineNoWhitespaceElementAction
+			when InlineWhitespaceElementAction, InlineNoWhitespaceElementAction
 				
 			
 			else
 				@tagLevel++
+				console.log @tagLevel + "	startElement tag++ #{elementName}			no action"
 				@flush = true
 		
 		@lastEvent = EventStartTag
@@ -221,7 +227,7 @@ class BoilerpipeParser
 		@textBuffer += text
 		
 		tokens = @tokenizeString(text)
-		@tokenBuffer.push(tokens)
+		@tokenBuffer.merge tokens
 		
 		# if text.charAt(-1).isWhitespace()
 		# 	self.addWhitespaceIfNecessary()
@@ -238,11 +244,13 @@ class BoilerpipeParser
 				@ignorableElementDepth--
 				@tagLevel--
 				@flush = true
+				console.log @tagLevel + "	endElement tag-- #{elementName}			changesTagLevel"
 			
 			when BodyElementAction
 				@flushBlock()
 				@inBody--
 				@tagLevel--
+				console.log @tagLevel + "	endElement tag-- #{elementName}			changesTagLevel"
 			
 			
 			when AnchorTextElementAction
@@ -252,18 +260,14 @@ class BoilerpipeParser
 					@addToken(AnchorTextEnd)
 				
 				@tagLevel--
+				console.log @tagLevel + "	endElement tag-- #{elementName}			changesTagLevel"
 			
-			
-			# when InlineWhitespaceElementAction
-				# @addWhitespaceIfNecessary()
-			
-			
-			when InlineNoWhitespaceElementAction
-				
+			when InlineWhitespaceElementAction, InlineNoWhitespaceElementAction
 			
 			else
 				@tagLevel--
 				@flush = true
+				console.log @tagLevel + "	endElement tag-- #{elementName}			no action"
 		
 		
 		@flushBlock() if @flush
@@ -296,11 +300,8 @@ class BoilerpipeParser
 		numTokens = 0
 		numWordsCurrentLine = 0
 		
-		console.log("\n\n")
 		
 		for token in @tokenBuffer
-			console.log("#{token} #{token.constructor}")
-			
 			if token == AnchorTextStart
 				@inAnchorText = true
 			
