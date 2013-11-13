@@ -185,8 +185,8 @@ class BoilerpipeParser
 					@addToken(AnchorTextStart)
 			
 			
-			when InlineWhitespaceElementAction
-				@addWhitespaceIfNecessary()
+			# when InlineWhitespaceElementAction
+				# @addWhitespaceIfNecessary()
 			
 			when InlineNoWhitespaceElementAction
 				
@@ -208,22 +208,24 @@ class BoilerpipeParser
 		strippedContent = text.stripWhitespace()
 		
 		if strippedContent.length == 0
-			@addWhitespaceIfNecessary()
+			# @addWhitespaceIfNecessary()
 			@lastEvent = EventWhitespace
 			return
 		
-		if text.charAt(0).isWhitespace()
-			@addWhitespaceIfNecessary()
+		# if text.charAt(0).isWhitespace()
+		# 	@addWhitespaceIfNecessary()
 		
 		if @blockTagLevel == -1
 			@blockTagLevel = @tagLevel
 		
-		@textBuffer += strippedContent
-		@tokenBuffer += strippedContent
+		@textBuffer += text
 		
-		if text.charAt(-1).isWhitespace()
-			self.addWhitespaceIfNecessary()
+		tokens = @tokenizeString(text)
+		@tokenBuffer.push(tokens)
 		
+		# if text.charAt(-1).isWhitespace()
+		# 	self.addWhitespaceIfNecessary()
+		# 
 		@lastEvent = EventCharacters
 		@currentContainedTextElements.push(@textElementIdx)
 	
@@ -252,8 +254,8 @@ class BoilerpipeParser
 				@tagLevel--
 			
 			
-			when InlineWhitespaceElementAction
-				@addWhitespaceIfNecessary()
+			# when InlineWhitespaceElementAction
+				# @addWhitespaceIfNecessary()
 			
 			
 			when InlineNoWhitespaceElementAction
@@ -282,11 +284,10 @@ class BoilerpipeParser
 			@clearTextBuffer()
 			return
 		
-		if !@tokenBuffer.stripWhitespace()?.length > 0
+		if !@tokenBuffer.length > 0
 			@clearTextBuffer()
 			return
 		
-		tokens = @tokenizeString(@.tokenBuffer)
 		numWords = 0
 		numWordsInAnchorText = 0
 		numWrappedLines = 0
@@ -295,7 +296,11 @@ class BoilerpipeParser
 		numTokens = 0
 		numWordsCurrentLine = 0
 		
-		for token in tokens
+		console.log("\n\n")
+		
+		for token in @tokenBuffer
+			console.log("#{token} #{token.constructor}")
+			
 			if token == AnchorTextStart
 				@inAnchorText = true
 			
@@ -328,7 +333,7 @@ class BoilerpipeParser
 			else
 				numWordsInWrappedLines = numWords - numWordsCurrentLine
 			
-			currentText = @textBuffer.stripWhitespace()
+			currentText = @textBuffer
 			textBlock = new TextBlock(currentText, @currentContainedTextElements, @blockTagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, @offsetBlocks)
 			
 			@currentContainedTextElements = []
@@ -343,25 +348,15 @@ class BoilerpipeParser
 	
 	
 	addToken: (token) ->
-		@addWhitespaceIfNecessary()
-		@tokenBuffer += token
-		@addWhitespaceIfNecessary()
+		@tokenBuffer.push(token) if token?
 	
 	addTextBlock: (textBlock) ->
-			@textBlocks.push(textBlock) if textBlock
+		@textBlocks.push(textBlock) if textBlock?
 	
 	clearTextBuffer: ->
 		@textBuffer = ''
-		@tokenBuffer = ''
-	
-	addWhitespaceIfNecessary: () ->
-		if @textBuffer.length == 0 or not @textBuffer.charAt(-1).isWhitespace()
-			@textBuffer += ' '
+		@tokenBuffer = []
 		
-		if @tokenBuffer.length == 0 or not @tokenBuffer.charAt(-1).isWhitespace()
-			@tokenBuffer += ' '
-	
-	
 	
 	elementTypeForTag: (tagName) ->
 		@mapOFActionsToTags = {
