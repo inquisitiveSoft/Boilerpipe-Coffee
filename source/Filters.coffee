@@ -1,4 +1,3 @@
-
 ###
 	
 	Filters
@@ -8,7 +7,7 @@
 	---------------
 		MarkEverythingContentFilter - Marks all blocks as content.
 		InvertedFilter - Reverts the "isContent" flag for all TextBlocks
-		BoilerplateBlockFilter - Removes TextBlocks which have explicitly been marked as "not content". 
+		RemoveNonContentBlocksFilter - Removes TextBlocks which have explicitly been marked as "not content". 
 		MinWordsFilter - Keeps only those content blocks which contain at least k words.
 		MinClauseWordsFilter - Keeps only blocks that have at least one segment fragment ("clause") with at least k words
 		SplitParagraphBlocksFilter - Splits TextBlocks at paragraph boundaries
@@ -47,7 +46,7 @@
 class BaseFilter
 	
 	process: (document) ->
-		# To be overridden by subclasses
+		# Intended to be overridden by subclasses
 		false
 
 
@@ -61,7 +60,7 @@ class FilterChain extends BaseFilter
 		hasDetectedChanges = false
 		
 		for filter in @filters
-			hasDetectedChanges |= filter.process(document)
+			hasDetectedChanges = filter.process(document)
 		
 		hasDetectedChanges
 
@@ -76,7 +75,21 @@ class MarkEverythingContentFilter extends  BaseFilter
 
 
 # InvertedFilter
-# BoilerplateBlockFilter
+
+
+class RemoveNonContentBlocksFilter extends BaseFilter
+	
+	process: (document) ->
+		hasChanges = false
+		
+		for textBlock in document.textBlocks
+			if !textBlock?.isContent
+				document.removeTextBlock(textBlock) 
+				hasChanges = true
+		
+		hasChanges 
+
+
 # MinWordsFilter
 # MinClauseWordsFilter
 # SplitParagraphBlocksFilter
@@ -132,45 +145,109 @@ class BlockProximityFusion extends BaseFilter
 		textBlocks = document.textBlocks
 		return false if textBlocks.length < 2
 		
+		startIndex = null
+		
 		if @contentOnly
-			startIndex = null
-			
-			for textBlock, index in textBlocks
+			for textBlock, blockIndex in textBlocks
 				if textBlock.isContent
-					startIndex = index
+					startIndex = blockIndex
 					break
 			
-			if !startIndex?
-				return false
-		else
-			startIndex = 0
+			return false if !startIndex
 		
 		
-		previousTextBlock = textBlocks[startIndex]
-		hasDetectedChanges = false
+		previousBlock = textBlocks[startIndex]
+		hasFoundChanges = false
+		startIndex = 0
 		
-		for currentTextBlock in textBlocks[(startIndex + 1)..]
-			if not currentTextBlock.isContent
-				previousTextBlock = currentTextBlock
+		for textBlock in textBlocks[startIndex + 1..]
+			if not textBlock.isContent
+				previousBlock = textBlock
 				continue 
 			
-			diffBlocks = currentTextBlock.offsetBlocksStart - previousTextBlock.offsetBlocksEnd - 1;
+			diffBlocks = textBlock.offsetBlocksStart - previousBlock.offsetBlocksEnd - 1;
+			ok = false
 			
 			if diffBlocks <= @maxBlocksDistance
-				if not (@contentOnly and not previousTextBlock.isContent or not currentTextBlock.isContent) and
-				not (@sameTagLevelOnly and previousTextBlock.tagLevel != currentTextBlock.tagLevel)
-					previousTextBlock.mergeNext(currentTextBlock)
-					document.removeTextBlock(currentTextBlock)
-					hasDetectedChanges = true
-					break
+				if !(@contentOnly and not previousBlock.isContent or not textBlock.isContent) or
+				not (@sameTagLevelOnly and previousBlock.tagLevel != textBlock.tagLevel)
+					ok = true
 			
-			previousTextBlock = currentTextBlock
+			if ok
+				previousBlock.mergeNext(textBlock)
+				document.removeTextBlock(textBlock)	#remove current block
+				hasFoundChanges = true
+			else
+				previousBlock = textBlock
+		
+		hasFoundChanges
+
+
+class KeepLargestBlockFilter extends BaseFilter
+
+
+	constructor: (expandToSameLevelText = false) ->
+		@expandToSameLevelText = expandToSameLevelText
+	
+	process: (document) ->
+		textBlocks = document.textBlocks
+		return false if textBlocks.length < 2
+		
+		contentBlocks = textBlocks.filter (textBlock) -> textBlock.isContent
+		largestBlock = contentBlocks.reduce (a, b) -> if a.numWords > b.numWords then a else b
+		largestBlock?.isContent = true
+		
+		for textBlock in textBlocks
+			if textBlock != largestBlock
+				textBlock.isContent = false
+				textBlock.addLabel(TextBlock.MightBeContent)
+		
+		if @expandToSameLevelText and largestBlock?
+			tagLevelOfLargestBlock = largestBlock.tagLevel
+			largestBlockIndex = textBlocks.indexOf largestBlock
+		
+			for textBlock in textBlocks[largestBlockIndex..]
+				tagLevel = textBlock.tagLevel
+				
+				break if tagLevel < tagLevelOfLargestBlock
+				textBlock.isContent = true if tagLevel == tagLevelOfLargestBlock
+			
+			for textBlock in textBlocks[..largestBlockIndex]
+				tagLevel = textBlock.tagLevel
+				
+				break if tagLevel < tagLevelOfLargestBlock
+				textBlock.isContent = true if tagLevel == tagLevelOfLargestBlock
+		
+		return true
+	
+
+
+
+class ExpandTitleToContentFilter extends BaseFilter
+	
+	process: (document) ->
+		titleIndex = -1
+		contentStart = -1
+		textBlockIndex= 0
+		
+		for textBlock in document.textBlocks
+			if contentStart == -1
+				titleIndex = index if textBlock.hasLabel(TextBlock.TITLE)
+				contentStart = textBlockIndex if textBlock.isContent
+			
+			textBlockIndex += 1
+		
+		hasDetectedChanges= false
+		
+		if contentStart > titleIndex or titleIndex != -1
+			for textBlock in document.textBlocks[titleIndex..contentStart]
+				if textBlock.hasLabel(TextBlock.MightBeContent)
+					hasDetectedChanges |= textBlock.isContent = true
 		
 		hasDetectedChanges
 
 
-# KeepLargestBlockFilter
-# ExpandTitleToContentFilter
+
 # ArticleMetadataFilte
 # AddPrecedingLabelsFilter
 
@@ -180,10 +257,10 @@ class DocumentTitleMatchClassifier extends BaseFilter
 	constructor: (title, useDocumentTitle = false) ->
 		@useDocumentTitle = useDocumentTitle 
 		
-		# if useDocumentTitle 
-		# 	@potentialTitles = [] 
-		# else
-		@potentialTitles = @findPotentialTitles("title")
+		if useDocumentTitle 
+			@potentialTitles = [] 
+		else
+			@potentialTitles = @findPotentialTitles("title")
 	
 	
 	findPotentialTitles: (title) ->
@@ -240,9 +317,38 @@ class DocumentTitleMatchClassifier extends BaseFilter
 # ###	
 # English-trained Heuristic Filters:
 # ###
+
+
 # MinFulltextWordsFilter
 # KeepLargestFulltextBlockFilter
-# IgnoreBlocksAfterContentFilter
+
+
+class IgnoreBlocksAfterContentFilter extends BaseFilter
+	
+	constructor: (self, minimumNumberOfWords = 60) ->
+		@minimumNumberOfWords = minimumNumberOfWords
+
+
+	process: (document) ->
+		
+		numWords = 0
+		foundEndOfText = false
+		hasDetectedChanges = false
+		
+		for textBlock in document.textBlocks
+			if textBlock.isContent
+				numWords += textBlock.numFullTextWords()
+		
+			if textBlock.hasLabel(TextBlock.EndOfText) and numWords >= @minimumNumberOfWords
+				foundEndOfText = true
+			
+			if foundEndOfText
+				textBlock.isContent = false
+				hasDetectedChanges = true
+		
+		hasDetectedChanges 
+	
+	
 # IgnoreBlocksAfterContentFromEndFilter
 
 
@@ -270,41 +376,27 @@ class TerminatingBlocksFinder extends BaseFilter
 			foundMatch |= !startMatches.every (match) -> !lowercaseText.startsWith(match)
 			foundMatch |= !inMatches.every (match) -> !~lowercaseText.indexOf(match)
 			foundMatch |= !equalMatch.every (match) -> lowercaseText != match
-			foundMatch |= @startsWithNumber(lowercaseText, numbersMatch)
+			foundMatch |= @isNumberFollowedByString(lowercaseText, numbersMatch)
 			
 			if foundMatch
 				textBlock.addLabel TextBlock.EndOfText
 				hasDetectedChanges = true
 		
 		hasDetectedChanges
-
-
-	# 
-	# 	 * Checks whether the given text starts with a sequence of digits,
-	# 	 * followed by one of the given strings.
-	# 	 * 
-	# 	 * @param t
-	# 	 *			The text to examine
-	# 	 * @param len
-	# 	 *			The length of the text to examine
-	# 	 * @param str
-	# 	 *			Any strings that may follow the digits.
-	# 	 * @return true if at least one combination matches
-	# 	 
-	startsWithNumber: (text, matchStrArr) ->
-		matchesNumber = text.search /^\D/
-		matchesNumber = text.length if matchesNumber < 0
+	
+	isNumberFollowedByString: (text, possibleMatches) ->
+		matchLocation= text.search /^\D/
 		
-		if matchesNumber == 0
-			return false
+		if matchLocation == 0
+			for possibleMatch in possibleMatches
+				if text.startsWith(possibleMatch[matchLocation..])
+					return true
 		
-		return any(text.startsWith(matchStr,pos) for matchStr in matchStrArr)
-		true
+		false
 
 
 
 class NumWordsRulesClassifier extends BaseFilter
-	
 	
 	process: (document) ->
 		textBlocks = document.textBlocks

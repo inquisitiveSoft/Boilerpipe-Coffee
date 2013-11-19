@@ -2,7 +2,7 @@
 
 String::stripWhitespace = () ->
 	@.replace /^\s+|\s+$/g, ""
-		
+
 String::normalize = () ->
 	@.stripWhitespace().toLowerCase()
 
@@ -24,6 +24,9 @@ String::startsWith = (match) ->
 
 Array::merge = (secondArray) ->
 	Array::push.apply @, secondArray
+
+Array::contains = (object) ->
+	@.indexOf(object) >= 0 
 
 
 Array::where = (query, matcher = (a,b) -> a is b) ->

@@ -1,6 +1,7 @@
 #!/bin/bash
-coffeescript-concat -I source -o build/Boilerpipe.coffee
-coffee --compile build/Boilerpipe.coffee
-coffee build/Boilerpipe.coffee
+coffeescript-concat -I source -I example -o build/Boilerpipe.coffee
+coffeescript-concat -I source -I example -o build/Boilerpipe-Example.coffee
+# coffee --compile build/Boilerpipe-Compiled.coffee
 
-# coffee build/Boilerpipe.coffee > coffee-output.txt
+# Run
+coffee build/Boilerpipe-Example.coffee

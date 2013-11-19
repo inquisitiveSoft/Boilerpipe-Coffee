@@ -958,7 +958,7 @@ class Boilerpipe
 					new DocumentTitleMatchClassifier(null, false),
 					new NumWordsRulesClassifier(),
 					new IgnoreBlocksAfterContentFilter(),
-					# new BlockProximityFusion(1, false, false),
+					new BlockProximityFusion(1, false, false),
 					# new RemoveNonContentBlocksFilter(),
 					# new BlockProximityFusion(1, true, false),
 					# new KeepLargestBlockFilter(),
@@ -987,38 +987,89 @@ class Boilerpipe
 		
 
 
-fs = require 'fs'
-request = require "request"
-path = require 'path'
-
-
-getContentFromHTML = (html) ->
-	boilerpipe = new Boilerpipe
-	document = boilerpipe.documentFromHTML(html, Boilerpipe.ArticleExtractor)
+class TestHelper
+	@defaultWords: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec fermentum tincidunt magna, eu pulvinar mauris dapibus pharetra. In varius, nisl a rutrum porta, sem sem semper lacus, et varius urna tellus vel lorem. Nullam urna eros, luctus eget blandit ac, imperdiet feugiat ipsum. Donec laoreet tristique mi a bibendum. Sed pretium bibendum scelerisque. Mauris id pellentesque turpis. Mauris porta adipiscing massa, quis tempus dui pharetra ac. Morbi lacus mauris, feugiat ac tempor ut, congue tincidunt risus. Pellentesque tincidunt adipiscing elit, in fringilla enim scelerisque vel. Nulla facilisi. ".split(' ')
 	
-	# for textBlock in document.contentBlocks()
-	# 	console.log textBlock.description() + "\n"
-	
-	console.log "number of text blocks: #{document.textBlocks.length}"
-	console.log "number of content blocks: #{document.numberOfContentBlocks()}"
-	console.log document.content()
-
-
-getContentFromFile = (filePath) ->
-	fs.readFile filePath, (err, data) ->
-		if data
-			getContentFromHTML(data)
-		else
-			console.log err
-
-
-getContentFromURL = (sourceURL) ->
-	request sourceURL, (error, response, body) ->
-		if error?
-			console.log error, response
-			return null
+	@makeDocument: (wordsArray, numAnchorWordsArray, isContentArray, labelArray) ->
+		textBlocks = []
 		
-		getContentFromHTML(body) 
+		for words, index in wordsArray
+			if typeof(words) == 'number'
+				numWords = words
+				text = TestHelper.defaultWords[...numWords].join(' ')
+			else
+				text = words
+				numWords = text.count(' ')
+			
+			
+			numAnchorWords = numAnchorWordsArray?[index] || 0
+			block = new TextBlock(text, null, null, numWords, numAnchorWords, 0, 0, index)
+			block.isContent = isContentArray?[index]
+			
+			label = labelArray?[index]
+			
+			if label
+				if typeof(label) == 'array'
+					for l in label
+						block.addLabel(l)
+				else
+					block.addLabel(label)
+			
+			textBlocks.push(block)
 	
+		return new TextDocument(null, textBlocks)
 
-getContentFromFile('example/index.html')
+
+#  Filters:
+
+
+
+
+
+fs = require 'fs'
+request = require 'request'
+
+chai = require 'chai'
+chai.should()
+
+
+# 
+# describe "NumWordsRulesClassifier filter", ->
+# 	
+#   it "negative match", ->
+# 		#accepts or rejects block based on machine-trained decision tree rules
+# 		#using features from previous, current and next block (tests middle block only)
+# 		document = TestHelper.makeDocument([2, 10, 10], [0, 0, 0], [true, true, true])
+# 		filter = new NumWordsRulesClassifier()
+# 		isChanged = filter.process(document)
+# 		document.textBlocks[0].isContent.should.be.false
+# 		
+# 	# it "positive match", ->
+# 	# 	document = TestHelper.makeDocument([10, 10, 10], [0, 0, 0], [true, true, true])
+# 	# 	filter = new NumWordsRulesClassifier()
+# 	# 	isChanged = filter.process(document)
+# 	# 	
+# 	# 	console.log document.textBlocks
+# 	# 	document.textBlocks[0].isContent.should.be.true
+# 	# 
+
+
+describe "BlockProximityFusion filter", ->
+	
+	it "fuses blocks which are close to each other", ->
+		#fuse blocks close to each other
+		document = TestHelper.makeDocument([10, 10, 10, 10, 10, 10, 10], null, [false, true, true, true, true, true, false])
+		filter = new BlockProximityFusion(1, true, false)
+		
+		indexesOfBlocks = ([textBlock.offsetBlocksStart, textBlock.offsetBlocksEnd] for textBlock in document.textBlocks)
+		console.log indexesOfBlocks
+		
+		isChanged = filter.process(document)
+		
+		indexesOfBlocks = ([textBlock.offsetBlocksStart, textBlock.offsetBlocksEnd] for textBlock in document.textBlocks)
+		console.log indexesOfBlocks
+		
+		indexesOfBlocks.should.equal [[0, 0], [1, 5], [6, 6]]
+		isChanged.should.be.true
+		
+

@@ -2,8 +2,6 @@
 #= require <Filters.coffee>
 
 
-
-
 class Boilerpipe
 	
 	# Filter types
@@ -12,31 +10,14 @@ class Boilerpipe
 	@KeepEverythingExtractor: "KeepEverythingExtractor"
 	
 	
-	contentFromHTML: (html, filterType) ->
-		document = @documentFromHTML(html)
-		
-		# for textBlock in document.textBlocks
-		# 	console.log("#{textBlock.description()}")
-		
-		console.log("number of text blocks: #{document.textBlocks.length}")
-		
-		# filterType =  if filterType?
-		content = @filterTextBlocks(document, filterType)
-		console.log("content: #{content.length}")
-		
-		content
-	
-	
 	documentFromHTML: (html, filterType) ->
 		parser = new BoilerpipeParser
-		parser.parseDocumentFromHTML(html)
-	
-	
-	filterTextBlocks: (document, filterType) ->
-		filterChain = @filterChainForType(filterType)
-		hasChanges = filterChain?.process(document)
-		document.content()
+		document = parser.parseDocumentFromHTML(html)
 		
+		# filterType =  if filterType?
+		filterChain = @filterChainForType(filterType)
+		foundChanges = filterChain?.process(document)
+		document
 	
 	
 	filterChainForType: (filterType) ->
@@ -53,13 +34,14 @@ class Boilerpipe
 					new TerminatingBlocksFinder(),
 					new DocumentTitleMatchClassifier(null, false),
 					new NumWordsRulesClassifier(),
-					# new IgnoreBlocksAfterContentFilter(),
-					# new BlockProximityFusion(1, false, false),
-					# new BoilerplateBlockFilter(),
+					new IgnoreBlocksAfterContentFilter(),
+					new BlockProximityFusion(1, false, false),
+					# new RemoveNonContentBlocksFilter(),
 					# new BlockProximityFusion(1, true, false),
 					# new KeepLargestBlockFilter(),
 					# new ExpandTitleToContentFilter()
 				])
+				
 			
 			when Boilerpipe.KeepEverythingExtractor
 				new FilterChain([

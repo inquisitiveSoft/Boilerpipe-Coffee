@@ -124,7 +124,8 @@ class BoilerpipeParser
 	foundText: (text) ->
 		@textElementIdx++
 		@flushBlock() if @flush
-		return if @inIgnorableElement > 0 or !text? or text.length == 0
+		
+		return if @ignorableElementDepth > 0 or !text? or text.length == 0
 		
 		strippedContent = text.stripWhitespace()
 		
@@ -190,6 +191,7 @@ class BoilerpipeParser
 			@clearTextBuffer()
 			return
 		
+		
 		numWords = 0
 		numWordsInAnchorText = 0
 		numWrappedLines = 0
@@ -246,7 +248,6 @@ class BoilerpipeParser
 	addToken: (token) ->
 		@tokenBuffer.push(token) if token?
 	
-	addTextBlock: (textBlock) ->
 	
 	clearTextBuffer: ->
 		@textBuffer = ''

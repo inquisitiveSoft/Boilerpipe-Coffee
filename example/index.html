@@ -1,0 +1,758 @@
+
+<!DOCTYPE html>
+<html lang="en-US">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+        <title>Tutorial - Learn Python in 10 minutes - Stavros&#39; Stuff</title>
+
+        <meta http-equiv="X-XRDS-Location" content="//www.stavros.io/files/xrds" />
+        <meta http-equiv="X-Yadis-Location" content="//www.stavros.io/files/xrds" />
+        
+        <link rel="canonical" href="//www.stavros.io/tutorials/python/"/>
+        
+
+        <link rel="shortcut icon" type="image/x-icon" href="/media/images/favicon-0d350534022056c0dbf839720d461d8751cc5fae.png">
+
+        <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0" />
+
+        <!--[if IE]>
+        <link rel="stylesheet" type="text/css" href="/media/ie9-be333572057c83aa058d5ecb874a763a288cd8c3.css" />
+        <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+        <!--[if lt IE 9]>
+        <link rel="stylesheet" type="text/css" href="/media/ie-5b4684adae0e7d6208c60e1c9103ed59f30ceee0.css" />
+        <![endif]-->
+
+        <script type="text/javascript">
+            document.documentElement.className = 'js';
+        </script>
+
+        <link rel="alternate" type="application/rss+xml" title="Stavros&#39; Stuff full posts feed" href="http://feeds.feedburner.com/stavrosstuff" />
+
+        <link rel="stylesheet" type="text/css" href="/media/main-3e34d80ff7dc0de41bd2b37dbfaf1d7ed369c064.css" />
+
+        <link rel='stylesheet' id='google_raleway-css'  href='//fonts.googleapis.com/css?family=Raleway%3A200%2C300%2C400%2C600%2C800&#038;ver=3.5.1' type='text/css' media='all' />
+        <link rel='stylesheet' id='google_lato-css'  href='//fonts.googleapis.com/css?family=Lato%3A300%2C400%2C700&#038;ver=3.5.1' type='text/css' media='all' />
+
+        <style type="text/css">
+            a, #cancel-comment-reply i, #content .meta a, .post-navigation a:hover, .post-navigation li:hover i, .logo-text:hover i, #sidebar .widget li:before {
+            color: #48ADD8
+            ;
+            }
+            .logo-text, .next-prev a, #commentform #submit, .wpcf7-submit, .header .search-form .submit, .search-form .submit, .hero h3, .search-form .submit, .pull-quote, .flex-direction-nav a:hover, .tagcloud a {
+            background: #48ADD8
+            ;
+            }
+            .pull-quote:after {
+            border-top: 20px solid #48ADD8
+            ;
+            }
+        </style>
+        <script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-51110-6']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+</head>
+
+    </head>
+    <body class="single">
+        <div class="header-wrap clearfix">
+            <div class="header-search-hidden">
+                <a class="header-search-hidden-close" href="#"><i class="icon-remove"></i></a>
+                <form class="search-form clearfix">
+                    <fieldset>
+                        <input type="text" class="search-form-input text" name="q" onfocus="if (this.value == 'Search the site &hellip;') {this.value = '';}" onblur="if (this.value == '') {this.value = 'Search the site &hellip;';}" value="Search the site &hellip;"/>
+                        <input type="submit" value="Search" class="submit search-button" />
+                    </fieldset>
+                </form>
+            </div>
+            <div class="container">
+                <header class="header">
+                    <!-- grab the logo and site title -->
+                    <hgroup>
+                    <h1 class="logo-text"><a href="/" title="Stavros&#39; Stuff">Stavros&#39; Stuff</a></h1>
+                        <h2 class="logo-subtitle">Angry rants of programming and other things.</h2>
+                    </hgroup>
+                    <nav role="navigation" class="header-nav">
+                        <!-- nav menu -->
+                        <div class="menu-header-container">
+                            <ul id="menu-header" class="nav">
+                                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                                    <a href="#">Tutorials</a>
+                                    <ul class="sub-menu">
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/tutorials/python/">Learn Python in Ten Minutes</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/tutorials/online-security/">How to keep yourself secure online</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/tutorials/icecast/">How to create an internet radio station</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/tutorials/bittorrent/">How to use BitTorrent to send files</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/tutorials/bittorrent/download/">How to download files with uTorrent</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/tutorials/email/">How to delete emails on a POP3 server</a></li>
+                                    </ul>
+                                </li>
+                                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                                    <a href="#">Downloads</a>
+                                    <ul class="sub-menu">
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/downloads/">Downloads</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/scripting/">Various scripts</a></li>
+                                    </ul>
+                                </li>
+                                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                                    <a href="#">Various</a>
+                                    <ul class="sub-menu">
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/projects/">My projects</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/freelance-python-developer/">Freelance Python developer</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="https://github.com/skorokithakis/">My GitHub</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="http://resume.stavros.io/">My résumé</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/about/">About me</a></li>
+                                    </ul>
+                                </li>
+                                <li class="menu-item menu-item-type-custom menu-item-object-custom">
+                                    <a href="#">Archives</a>
+                                    <ul class="sub-menu">
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives/full/">Full</a></li>
+                                        <li class="menu-item menu-item-type-post_type menu-item-object-page"><a href="/archives/">By year</a></li>
+                                    </ul>
+                                </li>
+                            </ul>
+                        </div>
+                    </nav>
+                    <a class="search-toggle" href="#"><i class="icon-search"></i></a>
+                </header>
+            </div>
+            <!-- container -->
+        </div>
+        <!-- header wrap -->
+        <div id="wrapper" class="clearfix">
+            <div class="inside-wrap clearfix">
+                
+<header class="page-titles">
+<div class="container clearfix">
+    <h1 class="entry-title"><a href="/tutorials/python/" title='Permalink to "Tutorial - Learn Python in 10 minutes"' rel="bookmark">Tutorial - Learn Python in 10 minutes</a></h1>
+    <h3 class="entry-subtitle">Conceived on 11 Jan 2006</h3>
+    <div class="featured-image-bg" style="background-image: url('/media/images/bkg/books21-77356dd04e775dc4bb90acfad5b2158e68c96306.jpg')"></div>
+</div>
+</header>
+
+                <div class="page container clearfix">
+                    
+<div id="content">
+    <div class="posts">
+        <article class="post">
+        <div class="box-wrap">
+            <div class="box">
+                <div class="post-content">
+                    <p>NOTE: If you would like some Python development done, my company, <a href="http://www.stochastictechnologies.com/">Stochastic Technologies</a>, is available for consulting.</p>
+
+<p>This tutorial is <a href="http://leanpub.com/learn-python">available as a short ebook</a>. The e-book features extra content from follow-up posts on various Python best practices, all in a convenient, self-contained format. <strong>All future updates are free for people who purchase it.</strong></p>
+
+<h2>Preliminary fluff</h2>
+
+<p>So, you want to learn the <a href="http://www.python.org">Python programming language</a> but can't find a concise and yet full-featured tutorial. This tutorial will attempt to teach you Python in 10 minutes. It's probably not so much a tutorial as it is a cross between a tutorial and a cheatsheet, so it will just show you some basic concepts to start you off. Obviously, if you want to really learn a language you need to program in it for a while. I will assume that you are already familiar with programming and will, therefore, skip most of the non-language-specific stuff. The important keywords will be <span class="highlight2">highlighted</span> so you can easily spot them. Also, <span class="highlight2">pay attention</span> because, due to the terseness of this tutorial, some things will be introduced directly in code and only briefly commented on.</p>
+
+<h2>Properties</h2>
+
+<p>
+Python is <span class="highlight2">strongly typed</span> (i.e. types are enforced), <span class="highlight2">dynamically, implicitly typed</span> (i.e. you don't have to declare variables), <span class="highlight2">case sensitive</span> (i.e. var and VAR are two different variables) and <span class="highlight2">object-oriented</span> (i.e. everything is an object).
+</p>
+
+<h2>Getting help</h2>
+
+<p>
+Help in Python is always available right in the interpreter. If you want to know how an object works, all you have to do is call <code>help(&lt;object&gt;)</code>! Also useful are <code>dir()</code>, which shows you all the object's methods, and <code>&lt;object&gt;.__doc__</code>, which shows you its documentation string:
+</p>
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">help</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">Help</span> <span class="n">on</span> <span class="nb">int</span> <span class="nb">object</span><span class="p">:</span>
+<span class="p">(</span><span class="n">etc</span> <span class="n">etc</span><span class="p">)</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">dir</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+<span class="p">[</span><span class="s">&#39;__abs__&#39;</span><span class="p">,</span> <span class="s">&#39;__add__&#39;</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">abs</span><span class="o">.</span><span class="n">__doc__</span>
+<span class="s">&#39;abs(number) -&gt; number</span>
+
+<span class="n">Return</span> <span class="n">the</span> <span class="n">absolute</span> <span class="n">value</span> <span class="n">of</span> <span class="n">the</span> <span class="n">argument</span><span class="o">.</span><span class="s">&#39;</span>
+</pre></div>
+</code>
+
+
+<h2>Syntax</h2>
+
+<p>
+Python has <span class="highlight2">no mandatory statement termination characters</span> and <span class="highlight2">blocks are specified by indentation</span>. Indent to begin a block, dedent to end one. Statements that expect an indentation level end in a colon (:). <span class="highlight2">Comments</span> start with the pound (#) sign and are single-line, multi-line strings are used for <span class="highlight2">multi-line comments</span>. <span class="highlight2">Values are assigned</span> (in fact, objects are <span class="highlight2">bound</span> to names) with the _equals_ sign ("="), and <span class="highlight2">equality testing</span> is done using two _equals_ signs ("=="). You can increment/decrement values using the += and -= operators respectively by the right-hand amount. This works on many datatypes, strings included. You can also use multiple variables on one line. For example:
+</p>
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">myvar</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">myvar</span> <span class="o">+=</span> <span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">myvar</span>
+<span class="mi">5</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">myvar</span> <span class="o">-=</span> <span class="mi">1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">myvar</span>
+<span class="mi">4</span>
+<span class="sd">&quot;&quot;&quot;This is a multiline comment.</span>
+<span class="sd">The following lines concatenate the two strings.&quot;&quot;&quot;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mystring</span> <span class="o">=</span> <span class="s">&quot;Hello&quot;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mystring</span> <span class="o">+=</span> <span class="s">&quot; world.&quot;</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">mystring</span>
+<span class="n">Hello</span> <span class="n">world</span><span class="o">.</span>
+<span class="c"># This swaps the variables in one line(!).</span>
+<span class="c"># It doesn&#39;t violate strong typing because values aren&#39;t</span>
+<span class="c"># actually being assigned, but new objects are bound to</span>
+<span class="c"># the old names.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">myvar</span><span class="p">,</span> <span class="n">mystring</span> <span class="o">=</span> <span class="n">mystring</span><span class="p">,</span> <span class="n">myvar</span>
+</pre></div>
+</code>
+
+<h2>Data types</h2>
+
+<p>
+The data structures available in python are <span class="highlight2">lists, tuples and dictionaries</span>. Sets are available in the <code>sets</code> library (but are built-in in Python 2.5 and later). Lists are like one-dimensional arrays (but you can also have lists of other lists), dictionaries are associative arrays (a.k.a. hash tables) and tuples are immutable one-dimensional arrays (Python "arrays" can be of any type, so you can mix e.g. integers, strings, etc in lists/dictionaries/tuples). The index of the first item in all array types is 0. Negative numbers count from the end towards the beginning, -1 is the last item. Variables can point to functions. The usage is as follows:
+</p>
+
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">sample</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="s">&quot;another&quot;</span><span class="p">,</span> <span class="s">&quot;list&quot;</span><span class="p">],</span> <span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;tuple&quot;</span><span class="p">)]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mylist</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;List item 1&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mylist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="s">&quot;List item 1 again&quot;</span> <span class="c"># We&#39;re changing the item.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mylist</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.21</span> <span class="c"># Here, we refer to the last item.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mydict</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;Key 1&quot;</span><span class="p">:</span> <span class="s">&quot;Value 1&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&quot;pi&quot;</span><span class="p">:</span> <span class="mf">3.14</span><span class="p">}</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mydict</span><span class="p">[</span><span class="s">&quot;pi&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">3.15</span> <span class="c"># This is how you change dictionary values.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">mytuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">myfunction</span> <span class="o">=</span> <span class="nb">len</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">myfunction</span><span class="p">(</span><span class="n">mylist</span><span class="p">)</span>
+<span class="mi">3</span>
+</pre></div>
+</code>
+
+<p>
+You can access <span class="highlight2">array ranges</span> using a colon (:). Leaving the start index empty assumes the first item, leaving the end index assumes the last item. Negative indexes count from the last item backwards (thus -1 is the last item) like so:
+</p>
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">mylist</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;List item 1&quot;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">mylist</span><span class="p">[:]</span>
+<span class="p">[</span><span class="s">&#39;List item 1&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">3.1400000000000001</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">mylist</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">2</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;List item 1&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">mylist</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;List item 1&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">mylist</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">]</span>
+<span class="c"># Adding a third parameter, &quot;step&quot; will have Python step in</span>
+<span class="c"># N item increments, rather than 1.</span>
+<span class="c"># E.g., this will return the first item, then go to the third and</span>
+<span class="c"># return that (so, items 0 and 2 in 0-indexing).</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">mylist</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
+<span class="p">[</span><span class="s">&#39;List item 1&#39;</span><span class="p">,</span> <span class="mf">3.14</span><span class="p">]</span>
+</pre></div>
+</code>
+
+
+<h2>Strings</h2>
+
+<p>
+Its strings can use <span class="highlight2">either single or double quotation marks</span>, and you can have quotation marks of one kind inside a string that uses the other kind (i.e. "He said 'hello'." is valid). Multiline strings are enclosed in _triple double (or single) quotes_ ("""). Python <span class="highlight2">supports Unicode</span> out of the box, using the syntax u"This is a unicode string". To <span class="highlight2">fill a string with values</span>, you use the % (modulo) operator and a tuple. Each %s gets replaced with an item from the tuple, left to right, and you can also use dictionary substitutions, like so:
+</p>
+
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span><span class="k">print</span> <span class="s">&quot;Name: </span><span class="si">%s</span><span class="se">\</span>
+<span class="s">Number: </span><span class="si">%s</span><span class="se">\</span>
+<span class="s">String: </span><span class="si">%s</span><span class="s">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">myclass</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span> <span class="o">*</span> <span class="s">&quot;-&quot;</span><span class="p">)</span>
+<span class="n">Name</span><span class="p">:</span> <span class="n">Poromenos</span>
+<span class="n">Number</span><span class="p">:</span> <span class="mi">3</span>
+<span class="n">String</span><span class="p">:</span> <span class="o">---</span>
+
+<span class="n">strString</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;This is</span>
+<span class="s">a multiline</span>
+<span class="s">string.&quot;&quot;&quot;</span>
+
+<span class="c"># WARNING: Watch out for the trailing s in &quot;%(key)s&quot;.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="s">&quot;This </span><span class="si">%(verb)s</span><span class="s"> a </span><span class="si">%(noun)s</span><span class="s">.&quot;</span> <span class="o">%</span> <span class="p">{</span><span class="s">&quot;noun&quot;</span><span class="p">:</span> <span class="s">&quot;test&quot;</span><span class="p">,</span> <span class="s">&quot;verb&quot;</span><span class="p">:</span> <span class="s">&quot;is&quot;</span><span class="p">}</span>
+<span class="n">This</span> <span class="ow">is</span> <span class="n">a</span> <span class="n">test</span><span class="o">.</span>
+</pre></div>
+</code>
+
+
+<h2>Flow control statements</h2>
+
+<p>
+Flow control statements are <code>if</code>, <code>for</code>, and <code>while</code>. There is no <code>select</code>; instead, use if. Use for to enumerate through members of a list. To obtain a list of numbers, use <code>range(&lt;number&gt;)</code>. These statements' syntax is thus:
+</p>
+
+
+<div class="highlight"><pre><span class="n">rangelist</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">rangelist</span>
+<span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">9</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">number</span> <span class="ow">in</span> <span class="n">rangelist</span><span class="p">:</span>
+    <span class="c"># Check if number is one of</span>
+    <span class="c"># the numbers in the tuple.</span>
+    <span class="k">if</span> <span class="n">number</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">):</span>
+        <span class="c"># &quot;Break&quot; terminates a for without</span>
+        <span class="c"># executing the &quot;else&quot; clause.</span>
+        <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># &quot;Continue&quot; starts the next iteration</span>
+        <span class="c"># of the loop. It&#39;s rather useless here,</span>
+        <span class="c"># as it&#39;s the last statement of the loop.</span>
+        <span class="k">continue</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c"># The &quot;else&quot; clause is optional and is</span>
+    <span class="c"># executed only if the loop didn&#39;t &quot;break&quot;.</span>
+    <span class="k">pass</span> <span class="c"># Do nothing</span>
+
+<span class="k">if</span> <span class="n">rangelist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;The second item (lists are 0-based) is 2&quot;</span>
+<span class="k">elif</span> <span class="n">rangelist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;The second item (lists are 0-based) is 3&quot;</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">print</span> <span class="s">&quot;Dunno&quot;</span>
+
+<span class="k">while</span> <span class="n">rangelist</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+</code>
+
+
+<h2>Functions</h2>
+
+<p>
+Functions are <span class="highlight2">declared with the "def"</span> keyword. <span class="highlight2">Optional arguments</span> are set in the function declaration after the mandatory arguments by being assigned a default value. For <span class="highlight2">named arguments</span>, the name of the argument is assigned a value. Functions can return a tuple (and using tuple unpacking you can effectively return <span class="highlight2">multiple values</span>). <span class="highlight2">Lambda functions</span> are ad hoc functions that are comprised of a single statement. Parameters are passed <span class="highlight2">by reference</span>, but immutable types (tuples, ints, strings, etc) *cannot be changed*. This is because <span class="highlight2">only the memory location of the item is passed</span>, and <span class="highlight2">binding another object to a variable discards the old one</span>, so immutable types are replaced. For example:
+</p>
+
+
+<div class="highlight"><pre><span class="c"># Same as def funcvar(x): return x + 1</span>
+<span class="n">funcvar</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">funcvar</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="mi">2</span>
+
+<span class="c"># an_int and a_string are optional, they have default values</span>
+<span class="c"># if one is not passed (2 and &quot;A default string&quot;, respectively).</span>
+<span class="k">def</span> <span class="nf">passing_example</span><span class="p">(</span><span class="n">a_list</span><span class="p">,</span> <span class="n">an_int</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">a_string</span><span class="o">=</span><span class="s">&quot;A default string&quot;</span><span class="p">):</span>
+    <span class="n">a_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s">&quot;A new item&quot;</span><span class="p">)</span>
+    <span class="n">an_int</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="k">return</span> <span class="n">a_list</span><span class="p">,</span> <span class="n">an_int</span><span class="p">,</span> <span class="n">a_string</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">my_list</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">my_int</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">passing_example</span><span class="p">(</span><span class="n">my_list</span><span class="p">,</span> <span class="n">my_int</span><span class="p">)</span>
+<span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;A new item&#39;</span><span class="p">],</span> <span class="mi">4</span><span class="p">,</span> <span class="s">&quot;A default string&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">my_list</span>
+<span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="s">&#39;A new item&#39;</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">my_int</span>
+<span class="mi">10</span>
+</pre></div>
+</code>
+
+
+<h2>Classes</h2>
+
+<p>
+Python supports a limited form of <span class="highlight2">multiple inheritance</span> in classes. <span class="highlight2">Private variables and methods</span> can be declared (by convention, this is not enforced by the language) by adding at least two leading underscores and at most one trailing one (e.g. "__spam"). We can also bind <span class="highlight2">arbitrary names</span> to class instances. An example follows:
+</p>
+
+
+<div class="highlight"><pre><span class="k">class</span> <span class="nc">MyClass</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">common</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myvariable</span> <span class="o">=</span> <span class="mi">3</span>
+    <span class="k">def</span> <span class="nf">myfunction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg1</span><span class="p">,</span> <span class="n">arg2</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">myvariable</span>
+
+    <span class="c"># This is the class instantiation</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">myfunction</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="mi">3</span>
+<span class="c"># This variable is shared by all classes.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance2</span> <span class="o">=</span> <span class="n">MyClass</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">10</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance2</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">10</span>
+<span class="c"># Note how we use the class name</span>
+<span class="c"># instead of the instance.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">MyClass</span><span class="o">.</span><span class="n">common</span> <span class="o">=</span> <span class="mi">30</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">30</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance2</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">30</span>
+<span class="c"># This will not update the variable on the class,</span>
+<span class="c"># instead it will bind a new object to the old</span>
+<span class="c"># variable name.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">common</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">10</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance2</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">30</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">MyClass</span><span class="o">.</span><span class="n">common</span> <span class="o">=</span> <span class="mi">50</span>
+<span class="c"># This has not changed, because &quot;common&quot; is</span>
+<span class="c"># now an instance variable.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">10</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance2</span><span class="o">.</span><span class="n">common</span>
+<span class="mi">50</span>
+
+<span class="c"># This class inherits from MyClass. The example</span>
+<span class="c"># class above inherits from &quot;object&quot;, which makes</span>
+<span class="c"># it what&#39;s called a &quot;new-style class&quot;.</span>
+<span class="c"># Multiple inheritance is declared as:</span>
+<span class="c"># class OtherClass(MyClass1, MyClass2, MyClassN)</span>
+<span class="k">class</span> <span class="nc">OtherClass</span><span class="p">(</span><span class="n">MyClass</span><span class="p">):</span>
+    <span class="c"># The &quot;self&quot; argument is passed automatically</span>
+    <span class="c"># and refers to the class instance, so you can set</span>
+    <span class="c"># instance variables as above, but from inside the class.</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">arg1</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myvariable</span> <span class="o">=</span> <span class="mi">3</span>
+        <span class="k">print</span> <span class="n">arg1</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span> <span class="o">=</span> <span class="n">OtherClass</span><span class="p">(</span><span class="s">&quot;hello&quot;</span><span class="p">)</span>
+<span class="n">hello</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">myfunction</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="mi">3</span>
+<span class="c"># This class doesn&#39;t have a .test member, but</span>
+<span class="c"># we can add one to the instance anyway. Note</span>
+<span class="c"># that this will only be a member of classinstance.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">test</span> <span class="o">=</span> <span class="mi">10</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">classinstance</span><span class="o">.</span><span class="n">test</span>
+<span class="mi">10</span>
+</pre></div>
+</code>
+
+
+<h2>Exceptions</h2>
+
+<p>
+Exceptions in Python are handled with <span class="highlight2">try-except [exceptionname]</span> blocks:
+</p>
+
+<div class="highlight"><pre><span class="k">def</span> <span class="nf">some_function</span><span class="p">():</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c"># Division by zero raises an exception</span>
+        <span class="mi">10</span> <span class="o">/</span> <span class="mi">0</span>
+    <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+        <span class="k">print</span> <span class="s">&quot;Oops, invalid.&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c"># Exception didn&#39;t occur, we&#39;re good.</span>
+        <span class="k">pass</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c"># This is executed after the code block is run</span>
+        <span class="c"># and all exceptions have been handled, even</span>
+        <span class="c"># if a new exception is raised while handling.</span>
+        <span class="k">print</span> <span class="s">&quot;We&#39;re done with that.&quot;</span>
+
+<span class="o">&gt;&gt;&gt;</span> <span class="n">some_function</span><span class="p">()</span>
+<span class="n">Oops</span><span class="p">,</span> <span class="n">invalid</span><span class="o">.</span>
+<span class="n">We</span><span class="s">&#39;re done with that.</span>
+</pre></div>
+</code>
+
+
+<h2>Importing</h2>
+
+<p>
+External libraries are used with the <code>import [libname]</code> keyword. You can also use <code>from [libname] import [funcname]</code> for individual functions. Here is an example:
+</p>
+
+
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">random</span>
+<span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">clock</span>
+
+<span class="n">randomint</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">randomint</span>
+<span class="mi">64</span>
+</pre></div>
+</code>
+
+
+<h2>File I/O</h2>
+
+<p>
+Python has a wide array of libraries built in. As an example, here is how <span class="highlight2">serializing</span> (converting data structures to strings using the <code>pickle</code> library) with file I/O is used:
+</p>
+
+
+<div class="highlight"><pre><span class="kn">import</span> <span class="nn">pickle</span>
+<span class="n">mylist</span> <span class="o">=</span> <span class="p">[</span><span class="s">&quot;This&quot;</span><span class="p">,</span> <span class="s">&quot;is&quot;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">13327</span><span class="p">]</span>
+<span class="c"># Open the file C:\\binary.dat for writing. The letter r before the</span>
+<span class="c"># filename string is used to prevent backslash escaping.</span>
+<span class="n">myfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">r&quot;C:</span><span class="se">\\</span><span class="s">binary.dat&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+<span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">mylist</span><span class="p">,</span> <span class="n">myfile</span><span class="p">)</span>
+<span class="n">myfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">myfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">r&quot;C:</span><span class="se">\\</span><span class="s">text.txt&quot;</span><span class="p">,</span> <span class="s">&quot;w&quot;</span><span class="p">)</span>
+<span class="n">myfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s">&quot;This is a sample string&quot;</span><span class="p">)</span>
+<span class="n">myfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="n">myfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">r&quot;C:</span><span class="se">\\</span><span class="s">text.txt&quot;</span><span class="p">)</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">myfile</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+<span class="s">&#39;This is a sample string&#39;</span>
+<span class="n">myfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+<span class="c"># Open the file for reading.</span>
+<span class="n">myfile</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="s">r&quot;C:</span><span class="se">\\</span><span class="s">binary.dat&quot;</span><span class="p">)</span>
+<span class="n">loadedlist</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">myfile</span><span class="p">)</span>
+<span class="n">myfile</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">loadedlist</span>
+<span class="p">[</span><span class="s">&#39;This&#39;</span><span class="p">,</span> <span class="s">&#39;is&#39;</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">13327</span><span class="p">]</span>
+</pre></div>
+</code>
+
+
+<h2>Miscellaneous</h2>
+
+<ul>
+    <li><span class="highlight2">Conditions can be chained</span>. <code>1 &lt; a &lt; 3</code> checks that a is both less than 3 and greater than 1.</li>
+    <li>You can use <code>del</code> to <span class="highlight2">delete variables or items in arrays</span>.</li>
+    <li><span class="highlight2">List comprehensions</span> provide a powerful way to create and manipulate lists. They consist of an expression followed by a <code>for</code> clause followed by zero or more <code>if</code> or <code>for</code> clauses, like so:</li>
+</ul>
+
+
+<div class="highlight"><pre><span class="o">&gt;&gt;&gt;</span> <span class="n">lst1</span> <span class="o">=</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="n">lst2</span> <span class="o">=</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="p">[</span><span class="n">x</span> <span class="o">*</span> <span class="n">y</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst1</span> <span class="k">for</span> <span class="n">y</span> <span class="ow">in</span> <span class="n">lst2</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">9</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">15</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="p">[</span><span class="n">x</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">lst1</span> <span class="k">if</span> <span class="mi">4</span> <span class="o">&gt;</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">]</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="c"># Check if a condition is true for any items.</span>
+<span class="c"># &quot;any&quot; returns true if any item in the list is true.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">any</span><span class="p">([</span><span class="n">i</span> <span class="o">%</span> <span class="mi">3</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+<span class="bp">True</span>
+<span class="c"># This is because 4 % 3 = 1, and 1 is true, so any()</span>
+<span class="c"># returns True.</span>
+
+<span class="c"># Check for how many items a condition is true.</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="nb">sum</span><span class="p">(</span><span class="mi">1</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">4</span><span class="p">)</span>
+<span class="mi">2</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">del</span> <span class="n">lst1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">print</span> <span class="n">lst1</span>
+<span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]</span>
+<span class="o">&gt;&gt;&gt;</span> <span class="k">del</span> <span class="n">lst1</span>
+</pre></div>
+</code>
+
+
+<ul>
+    <li><span class="highlight2">Global variables</span> are declared outside of functions and can be read without any special declarations, but if you want to write to them you must declare them at the beginning of the function with the "global" keyword, otherwise Python will bind that object to a new local variable (be careful of that, it's a small catch that can get you if you don't know it). For example:</li>
+</ul>
+
+
+<div class="highlight"><pre><span class="n">number</span> <span class="o">=</span> <span class="mi">5</span>
+
+<span class="k">def</span> <span class="nf">myfunc</span><span class="p">():</span>
+    <span class="c"># This will print 5.</span>
+    <span class="k">print</span> <span class="n">number</span>
+
+<span class="k">def</span> <span class="nf">anotherfunc</span><span class="p">():</span>
+    <span class="c"># This raises an exception because the variable has not</span>
+    <span class="c"># been bound before printing. Python knows that it an</span>
+    <span class="c"># object will be bound to it later and creates a new, local</span>
+    <span class="c"># object instead of accessing the global one.</span>
+    <span class="k">print</span> <span class="n">number</span>
+    <span class="n">number</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="k">def</span> <span class="nf">yetanotherfunc</span><span class="p">():</span>
+    <span class="k">global</span> <span class="n">number</span>
+    <span class="c"># This will correctly change the global.</span>
+    <span class="n">number</span> <span class="o">=</span> <span class="mi">3</span>
+</pre></div>
+</code>
+
+<h2>Epilogue</h2>
+
+<p>
+This tutorial is not meant to be an exhaustive list of all (or even a subset) of Python. Python has a vast array of libraries and much much more functionality which you will have to discover through other means, such as the excellent book <a href="http://www.amazon.com/gp/product/1590593561?ie=UTF8&tag=porosstuf-20&linkCode=as2&camp=1789&creative=9325&creativeASIN=1590593561">Dive into Python</a>. I hope I have made your transition in Python easier. Please leave comments if you believe there is something that could be improved or added or if there is anything else you would like to see (classes, error handling, anything).
+</p>
+
+<p>
+By the way, you should <a href="http://twitter.com/stavros">follow me on Twitter</a>.
+</p>
+
+<p>
+<a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/3.0/"><img class="right" alt="Creative Commons License" style="border-width:0" src="http://i.creativecommons.org/l/by-nc-nd/3.0/88x31.png" /></a><br />This work is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-nc-nd/3.0/">Creative Commons Attribution-NonCommercial-NoDerivs 3.0 Unported License</a>.
+</p>
+
+                </div>
+            </div>
+        </div>
+        </article>
+    </div>
+
+    <hr>
+
+    <div id="mc_embed_signup" class="styled-form">
+    <form action="http://korokithakis.us7.list-manage.com/subscribe/post?u=e852d258bd7a59b880efabdc5&amp;id=d1c29513c2" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="mailing-form validate" target="_blank" novalidate>
+        <h4>Subscribe to my mailing list</h4>
+        <p>Did you like what you just read and want to be notified when I post more? Subscribe
+        to my mailing list to get updates on my posts and other random goodies.</p>
+        <div class="mc-field-group">
+            <input placeholder="Email" type="email" value="" name="EMAIL" class="required email" id="mce-EMAIL">
+            <input placeholder="First name" type="text" value="" name="FNAME" class="" id="mce-FNAME">
+            <div class="response" id="mce-error-response" style="display:none"></div>
+            <div class="response" id="mce-success-response" style="display:none"></div>
+            <input type="submit" value="Subscribe" name="subscribe" id="mc-embedded-subscribe" class="submit-button">
+        </div>
+    </form>
+</div>
+<hr>
+
+
+    <iframe src="http://www.facebook.com/plugins/like.php?href=http://www.stavros.io/tutorials/python/&amp;layout=button_count&amp;show_faces=false&amp;width=110&amp;action=like&amp;colorscheme=light&amp;height=20" scrolling="no" frameborder="0" width="110" style="border:none; overflow:hidden; 110px; height:20px;" allowTransparency="true"></iframe>
+    <g:plusone></g:plusone>
+    <iframe allowtransparency="true" frameborder="0" scrolling="no" src="http://platform.twitter.com/widgets/tweet_button.html?url=http://www.stavros.io/tutorials/python/&amp;via=stavros&amp;text=Tutorial%20-%20Learn%20Python%20in%2010%20minutes&amp;count=horizontal" width="110" height="20"></iframe>
+
+    <hr>
+
+    
+    <div id="comment-jump" class="comments">
+        <div id="comments">
+            <div class="comments-wrap clearfix">
+                <h3 id="comments-title">
+                    <span>Join the conversation!</span>&nbsp;
+                </h3>
+                <div id="disqus_thread"></div>
+                <script type="text/javascript">
+                    var disqus_shortname = 'stavros';
+                    var disqus_identifier = 'yhL377aeRZ7dZkApbqB7DH';
+                    var disqus_title = 'Tutorial \u002D Learn Python in 10 minutes';
+                    var disqus_url = 'http://www.stavros.io/tutorials/python/';
+
+                    (function() {
+                     var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+                     dsq.src = 'http://' + disqus_shortname + '.disqus.com/embed.js';
+                     (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+                     })();
+                 </script>
+                 <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+             </div>
+         </div>
+     </div>
+     
+ </div>
+
+
+                    
+                    <div id="sidebar">
+                        <div class="widget">
+                            <div style="text-align: center">
+                                <img style="border-radius: 100px; max-height: 200px; max-width:200px;" src="//gravatar.com/avatar/e42b84ae166cd4eceefdb4360a5d9357?s=128" />
+                                <h3>Stavros Korokithakis</h3>
+                                <h5 id="nametitle">Guy who likes computers</h5>
+                            </div>
+                            <p>
+                            Greek. Amateur F1 driver. Technology enthusiast. Single parent. Liar.
+                            </p>
+                            <p>
+                            Founder of <a href="http://www.stochastic.io">Stochastic Technologies</a>, a
+                            software development agency, and creator of various products which you can
+                            find in the <a href="http://resume.stavros.io">résumé</a>.
+                            </p>
+                        </div>
+
+                        <div id="search-3" class="widget widget_search">
+                            <form class="search-form clearfix">
+                                <fieldset>
+                                    <input type="text" class="search-form-input text" name="q" onfocus="if (this.value == 'Search the site &hellip;') {this.value = '';}" onblur="if (this.value == '') {this.value = 'Search the site &hellip;';}" value="Search the site &hellip;"/>
+                                    <input type="submit" value="Search" class="submit search-button" />
+                                </fieldset>
+                            </form>
+                        </div>
+
+                        <div class="widget">
+                            <h2 class="widgettitle">Connect with me</h2>
+                            <div class="icons-widget clearfix">
+                                <div id="icons" class="large-icons">
+                                    <a href="mailto:hi@stavros.io" class="google-icon" title="Email me"><i class="icon-envelope-alt"></i></a>
+                                    <a href="http://feeds.feedburner.com/stavrosstuff" class="google-icon" title="RSS feed"><i class="icon-rss"></i></a>
+                                    <a href="https://twitter.com/Stavros" class="twitter-icon" title="Twitter"><i class="icon-twitter"></i></a>
+                                    <a href="https://plus.google.com/112248633257102064185?rel=author" class="google-icon" title="Google+"><i class="icon-google-plus"></i></a>
+                                    <a href="https://github.com/skorokithakis/" class="github-icon" title="Github"><i class="icon-github"></i></a>
+                                    <a href="https://www.linkedin.com/in/skorokithakis" class="linkedin-icon" title="LinkedIn"><i class="icon-linkedin"></i></a>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="widget">
+                            <h2 class="widgettitle">Recent Posts</h2>
+                            <ul>
+                                
+                                <li>
+                                <a href="/posts/no-hassle-emails-from-home/" title="No-hassle emails from your home server">No-hassle emails from your home server</a>
+                                </li>
+                                
+                                <li>
+                                <a href="/posts/winning-candy-crush/" title="Winning at Candy Crush">Winning at Candy Crush</a>
+                                </li>
+                                
+                                <li>
+                                <a href="/posts/python-fuse-filesystem/" title="Writing a FUSE filesystem in Python">Writing a FUSE filesystem in Python</a>
+                                </li>
+                                
+                                <li>
+                                <a href="/posts/encrypted-offsite-backups/" title="Encrypted, deduplicated remote backups">Encrypted, deduplicated remote backups</a>
+                                </li>
+                                
+                                <li>
+                                <a href="/posts/how-to-pronounce-gyros/" title="How to pronounce &quot;gyros&quot; (the greek food)">How to pronounce &quot;gyros&quot; (the greek food)</a>
+                                </li>
+                                
+                            </ul>
+                        </div>
+
+                        <div id="text-2" class="widget widget_text">
+                            <div class="textwidget">
+                                <a class="twitter-timeline" data-dnt="true" href="https://twitter.com/Stavros" data-widget-id="351341211300294656">Tweets by @Stavros</a>
+                                <script>!function(d,s,id){var js,fjs=d.getElementsByTagName(s)[0],p=/^http:/.test(d.location)?'http':'https';if(!d.getElementById(id)){js=d.createElement(s);js.id=id;js.async=true;js.src=p+"://platform.twitter.com/widgets.js";fjs.parentNode.insertBefore(js,fjs);}}(document,"script","twitter-wjs");</script>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <!-- container -->
+                <!-- footer -->
+            </div>
+            <!-- inside wrap -->
+        </div>
+        <!-- wrapper -->
+        <div class="footer-bottom">
+            <div class="container clearfix">
+                <div class="footer-widgets">
+                    <div class="theme-name-icon">
+                        <h3>Made in Greece</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+        <script async type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+        <script>
+            $( document ).ready(function() {
+                var sowitty = [
+                "Guy who likes computers",
+                "Man",
+                "International person of mystery",
+                "Full-heap developer",
+                "Person with too much free time",
+                "Unfunny",
+                "Site-owner",
+                "Random person",
+                "Social climber",
+                "Six-time solitaire champion",
+                "(Fake/ironic title here)",
+                "Likes solving pointless problems",
+                "A simple man",
+                ]
+                var item = sowitty[Math.floor(Math.random()*sowitty.length)];
+                $("#nametitle").text(item)
+            });
+        </script>
+
+        
+
+        <script type="text/javascript" src="/media/main-a2c6d29b603b638b8a9b297b033eea79bc62be35.js"></script>
+    </body>
+</html>

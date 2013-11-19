@@ -4,16 +4,16 @@
 class TextBlock
 	
 	# Standard block labels
-	# @Title: "Title"
+	@Title: "Title"
 	# @ArticleMetadata: "ArticleMetadata"
-	# @IndicatesEndOfText: "IndicatesEndOfText"
 	# @MightBeContent: "MightBeContent"
 	# @StrictlyNotContent: "StrictlyNotContent"
 	# @HorizontalRule = "@HorizontalRule"
 	# @MarkupPrefix = "<"
-	
 	@EndOfText: "EndOfText"
 	
+	
+	@DefaultFullTextWordsThreshold: 9
 	
 	constructor: (text, currentContainedTextElements, tagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, offsetBlocks) ->
 		@text = text?.replace /^\s+|\n+$/g, ""
@@ -23,10 +23,10 @@ class TextBlock
 		@numWordsInAnchorText = numWordsInAnchorText
 		@numWordsInWrappedLines = numWordsInWrappedLines
 		@numWrappedLines = numWrappedLines
-		@offsetBlocksStart = offsetBlocks
-		@offsetBlocksEnd = offsetBlocks
+		@offsetBlocksStart = offsetBlocks or 0
+		@offsetBlocksEnd = offsetBlocks or 0
 		@tagLevel = tagLevel
-		@isContent = true
+		@isContent = false
 		
 		@labels = []
 		
@@ -41,6 +41,7 @@ class TextBlock
 		description += "   numWordsInAnchorText = #{@numWordsInAnchorText}\n"
 		description += "   numWrappedLines = #{@numWrappedLines}\n"
 		description += "   linkDensity = #{@linkDensity}\n"
+		description += "   isContent = #{if @isContent then 'True' else 'False'}\n"
 		description += "'#{@text}'"
 		description
 	
@@ -73,12 +74,20 @@ class TextBlock
 		@calculateDensities()
 		@isContent |= nextTextBlock.isContent
 		@containedTextElements |= nextTextBlock.containedTextElements
-		@numFullTextWords += @numFullTextWords
 		@labels |= nextTextBlock.labels
 		@tagLevel = Math.min @tagLevel, nextTextBlock.tagLevel
 	
+	
 	addLabel: (label) ->
 		@labels.push(label) if label?
+	
+	
+	hasLabel: (label) ->
+		return @labels.contains(label) if label?
+		false
+	
+	numFullTextWords: (minTextDensity = TextBlock.DefaultFullTextWordsThreshold) ->
+		if @textDensity >= minTextDensity then @numWords else 0
 
 
 
@@ -93,7 +102,10 @@ class TextDocument
 	
 	content: () ->
 		@text(true, false)
-	
+
+	contentBlocks: () ->
+		@textBlocks.filter (textBlock) ->
+			textBlock.isContent
 	
 	#	  * Returns the TextDocument's content, non-content or both
 	#	  * @param includeContent Whether to include TextBlocks marked as "content".
@@ -108,6 +120,16 @@ class TextDocument
 				text += textBlock.text + '\n'
 		
 		text
+	
+	numberOfContentBlocks: () ->
+		numberOfContentBlocks = 0
+		
+		for textBlock in @textBlocks
+			if textBlock.isContent
+				numberOfContentBlocks++
+		
+		numberOfContentBlocks
+	
 	
 	removeTextBlock: (textBlock) ->
 		@textBlocks.removeObject(textBlock)
