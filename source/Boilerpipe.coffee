@@ -36,10 +36,10 @@ class Boilerpipe
 					new NumWordsRulesClassifier(),
 					new IgnoreBlocksAfterContentFilter(),
 					new BlockProximityFusion(1, false, false),
-					# new RemoveNonContentBlocksFilter(),
-					# new BlockProximityFusion(1, true, false),
-					# new KeepLargestBlockFilter(),
-					# new ExpandTitleToContentFilter()
+					new RemoveNonContentBlocksFilter(),
+					new BlockProximityFusion(1, true, false),
+					new KeepLargestBlockFilter(),
+					new ExpandTitleToContentFilter()
 				])
 				
 			

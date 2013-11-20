@@ -18,7 +18,7 @@ String::isWhitespace = () ->
 	@.length > 0 and /^\W+$/.test(@)
 
 String::startsWith = (match) ->
-	@.substring(0, match.length) == match if match?
+	@.substring(0, match.length) == match
 
 
 
@@ -52,8 +52,8 @@ class TextBlock
 	
 	# Standard block labels
 	@Title: "Title"
-	# @ArticleMetadata: "ArticleMetadata"
-	# @MightBeContent: "MightBeContent"
+	@ArticleMetadata: "ArticleMetadata"
+	@MightBeContent: "MightBeContent"
 	# @StrictlyNotContent: "StrictlyNotContent"
 	# @HorizontalRule = "@HorizontalRule"
 	# @MarkupPrefix = "<"
@@ -62,27 +62,26 @@ class TextBlock
 	
 	@DefaultFullTextWordsThreshold: 9
 	
-	constructor: (text, currentContainedTextElements, tagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, offsetBlocks) ->
+	constructor: (text, containedTextElements, tagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, offset) ->
 		@text = text?.replace /^\s+|\n+$/g, ""
 		
-		@currentContainedTextElements = currentContainedTextElements
-		@numWords = numWords
+		@containedTextElements = containedTextElements || []
+		@numWords = numWords || text?.split(/\W+/).length || 0
 		@numWordsInAnchorText = numWordsInAnchorText
 		@numWordsInWrappedLines = numWordsInWrappedLines
 		@numWrappedLines = numWrappedLines
-		@offsetBlocksStart = offsetBlocks or 0
-		@offsetBlocksEnd = offsetBlocks or 0
-		@tagLevel = tagLevel
-		@isContent = false
-		
+		@offsetStart = offset or 0
+		@offsetEnd = offset or 0
+		@tagLevel = tagLevel || 0
 		@labels = []
+		@isContent = false
 		
 		@calculateDensities()
 	
 	
 	description: ->
 		description = "TextBlock:\n"
-		description += "   offsetBlocksStart - offsetBlocksEnd = #{@offsetBlocksStart} - #{@offsetBlocksEnd}\n"
+		description += "   offsetStart - offsetEnd = #{@offsetStart} - #{@offsetEnd}\n"
 		description += "   tagLevel = #{@tagLevel}\n"
 		description += "   numWords = #{@numWords}\n"
 		description += "   numWordsInAnchorText = #{@numWordsInAnchorText}\n"
@@ -107,31 +106,27 @@ class TextBlock
 	
 	
 	mergeNext: (nextTextBlock) ->
-		if !text?
-			@text = ""
-		
 		@text += '\n' + nextTextBlock.text
 		@numWords += nextTextBlock.numWords
 		@numWordsInAnchorText += nextTextBlock.numWordsInAnchorText
 		@numWordsInWrappedLines += nextTextBlock.numWordsInWrappedLines
 		@numWrappedLines += nextTextBlock.numWrappedLines
-		@offsetBlocksStart = Math.min @offsetBlocksStart, nextTextBlock.offsetBlocksStart
-		@offsetBlocksEnd = Math.max @offsetBlocksEnd, nextTextBlock.offsetBlocksEnd
+		@offsetStart = Math.min @offsetStart, nextTextBlock.offsetStart
+		@offsetEnd = Math.max @offsetEnd, nextTextBlock.offsetEnd
+		
+		@isContent |= nextTextBlock.isContent
+		@containedTextElements.merge nextTextBlock.containedTextElements
+		@labels.merge nextTextBlock.labels
+		@tagLevel = Math.min @tagLevel, nextTextBlock.tagLevel
 		
 		@calculateDensities()
-		@isContent |= nextTextBlock.isContent
-		@containedTextElements |= nextTextBlock.containedTextElements
-		@labels |= nextTextBlock.labels
-		@tagLevel = Math.min @tagLevel, nextTextBlock.tagLevel
 	
 	
 	addLabel: (label) ->
-		@labels.push(label) if label?
-	
+		@labels.push(label)
 	
 	hasLabel: (label) ->
-		return @labels.contains(label) if label?
-		false
+		@labels.contains(label)
 	
 	numFullTextWords: (minTextDensity = TextBlock.DefaultFullTextWordsThreshold) ->
 		if @textDensity >= minTextDensity then @numWords else 0
@@ -231,7 +226,7 @@ class BoilerpipeParser
 		@textBlocks = []
 	
 		# Internal state
-		@offsetBlocks = 0
+		@offset = 0
 		@lastStartTag = null
 		@textBlocks = []
 		@labelStacks = []
@@ -418,10 +413,10 @@ class BoilerpipeParser
 				numWordsInWrappedLines = numWords - numWordsCurrentLine
 			
 			currentText = @textBuffer
-			textBlock = new TextBlock(currentText, @currentContainedTextElements, @blockTagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, @offsetBlocks)
+			textBlock = new TextBlock(currentText, @currentContainedTextElements, @blockTagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, @offset)
 			@textBlocks.push(textBlock)
 			
-			@offsetBlocks++
+			@offset++
 			@blockTagLevel = null
 			@currentContainedTextElements = []
 		
@@ -542,12 +537,12 @@ class FilterChain extends BaseFilter
 		@filters = filters
 	
 	process: (document) ->
-		hasDetectedChanges = false
+		foundChanges = false
 		
 		for filter in @filters
-			hasDetectedChanges = filter.process(document)
+			foundChanges = filter.process(document)
 		
-		hasDetectedChanges
+		foundChanges
 
 
 
@@ -565,14 +560,14 @@ class MarkEverythingContentFilter extends  BaseFilter
 class RemoveNonContentBlocksFilter extends BaseFilter
 	
 	process: (document) ->
-		hasChanges = false
+		foundChanges = false
 		
 		for textBlock in document.textBlocks
 			if !textBlock?.isContent
 				document.removeTextBlock(textBlock) 
-				hasChanges = true
+				foundChanges = true
 		
-		hasChanges 
+		foundChanges 
 
 
 # MinWordsFilter
@@ -593,7 +588,7 @@ class SimpleBlockFusionProcessor extends BaseFilter
 		textBlocks = document.textBlocks
 		return false if textBlocks.length < 2
 		
-		hasDetectedChanges = false
+		foundChanges = false
 		previousTextBlock = textBlocks[0]
 		count = 0
 		
@@ -601,12 +596,12 @@ class SimpleBlockFusionProcessor extends BaseFilter
 			if previousTextBlock? and previousTextBlock.textDensity == currentTextBlock.textDensity
 				previousTextBlock.mergeNext(currentTextBlock)
 				document.removeTextBlock(currentTextBlock)
-				hasDetectedChanges = true
+				foundChanges = true
 			else
 				previousTextBlock = currentTextBlock
 		
 		console.log document.content()
-		hasDetectedChanges
+		foundChanges
 
 
 # ContentFusion
@@ -639,37 +634,38 @@ class BlockProximityFusion extends BaseFilter
 					break
 			
 			return false if !startIndex
-		
+		else
+			startIndex = 0
 		
 		previousBlock = textBlocks[startIndex]
 		hasFoundChanges = false
-		startIndex = 0
 		
 		for textBlock in textBlocks[startIndex + 1..]
 			if not textBlock.isContent
 				previousBlock = textBlock
-				continue 
+			else 
+				diffBlocks = textBlock.offsetStart - previousBlock.offsetEnd - 1;
+				ok = false
 			
-			diffBlocks = textBlock.offsetBlocksStart - previousBlock.offsetBlocksEnd - 1;
-			ok = false
+				if diffBlocks <= @maxBlocksDistance
+					if !(@contentOnly and not previousBlock.isContent or not textBlock.isContent) or
+					not (@sameTagLevelOnly and previousBlock.tagLevel != textBlock.tagLevel)
+						ok = true
 			
-			if diffBlocks <= @maxBlocksDistance
-				if !(@contentOnly and not previousBlock.isContent or not textBlock.isContent) or
-				not (@sameTagLevelOnly and previousBlock.tagLevel != textBlock.tagLevel)
-					ok = true
-			
-			if ok
-				previousBlock.mergeNext(textBlock)
-				document.removeTextBlock(textBlock)	#remove current block
-				hasFoundChanges = true
-			else
-				previousBlock = textBlock
+				if ok
+					
+					previousBlock.mergeNext(textBlock)
+					document.removeTextBlock(textBlock)	#remove current block
+					hasFoundChanges = true
+				else
+					previousBlock = textBlock
 		
 		hasFoundChanges
 
 
-class KeepLargestBlockFilter extends BaseFilter
 
+
+class KeepLargestBlockFilter extends BaseFilter
 
 	constructor: (expandToSameLevelText = false) ->
 		@expandToSameLevelText = expandToSameLevelText
@@ -711,25 +707,26 @@ class KeepLargestBlockFilter extends BaseFilter
 class ExpandTitleToContentFilter extends BaseFilter
 	
 	process: (document) ->
-		titleIndex = -1
-		contentStart = -1
-		textBlockIndex= 0
+		titleIndex = null
+		contentStart = null
 		
-		for textBlock in document.textBlocks
-			if contentStart == -1
-				titleIndex = index if textBlock.hasLabel(TextBlock.TITLE)
-				contentStart = textBlockIndex if textBlock.isContent
+		for textBlock, currentIndex in document.textBlocks
+			if contentStart == null and textBlock.hasLabel(TextBlock.Title)
+				titleIndex = currentIndex
 			
-			textBlockIndex += 1
+			if contentStart == null and textBlock.isContent
+				contentStart = currentIndex
 		
-		hasDetectedChanges= false
+		foundChanges = false
 		
-		if contentStart > titleIndex or titleIndex != -1
-			for textBlock in document.textBlocks[titleIndex..contentStart]
-				if textBlock.hasLabel(TextBlock.MightBeContent)
-					hasDetectedChanges |= textBlock.isContent = true
+		return false if contentStart <= titleIndex or titleIndex == null
 		
-		hasDetectedChanges
+		for textBlock in document.textBlocks[titleIndex..contentStart]
+			if textBlock.hasLabel(TextBlock.MightBeContent)
+				textBlock.isContent = true
+				foundChanges = true
+		
+		foundChanges
 
 
 
@@ -748,6 +745,23 @@ class DocumentTitleMatchClassifier extends BaseFilter
 			@potentialTitles = @findPotentialTitles("title")
 	
 	
+	
+	process: (document) ->
+		console.log ""
+		potentialTitles = @findPotentialTitles(document.title) if @useDocumentTitle		
+		return false if !potentialTitles or potentialTitles.length == 0
+		
+		for textBlock in document.textBlocks
+			text = textBlock.text.normalize()
+			
+			for potentialTitle in potentialTitles
+				if potentialTitle.normalize() == text
+					textBlock.addLabel(TextBlock.Title)
+					return true
+		
+		false
+	
+	
 	findPotentialTitles: (title) ->
 		title = title?.stripWhitespace()
 		return null if !title? or title.length == 0
@@ -755,46 +769,37 @@ class DocumentTitleMatchClassifier extends BaseFilter
 		potentialTitles = []
 		potentialTitles.push title
 		
-		@longestMatch(title, pattern) for pattern in [
+		patterns = [
 			/[ ]*[\||:][ ]*/,
 			/[ ]*[\||:\(\)][ ]*/,
 			/[ ]*[\||:\(\)\-][ ]*/,
 			/[ ]*[\||,|:\(\)\-][ ]*/
 		]
-	
-	
-	process: (document) ->
-		self.potentialTitles = @findPotentialTitles(document.title) if @useDocTitle
-		return false if !@potentialTitles? or @potentialTitles.length == 0
 		
-		for textBlock in document.textBlocks
-			text = textBlock.text.toLowerCase().stripWhitespace()
-			
-			for potentialTitle in @potentialTitles
-				if potentialTitle?.toLowerCase() == text
-					textBlock.addLabel(TextBlock.Title)
-					return true
+		for pattern in patterns
+			match = @longestMatch(title, pattern) 
+			potentialTitles.push match if match
 		
-		false
+		potentialTitles	
 	
 	
 	longestMatch: (title, pattern) ->
 		sections = title.split pattern
-		return null if sections.length == 1
+		return null if sections.length == 0
 		
-		longestNumWords = 0
-		longestPart = ""
+		longestNumberOfWords = 0
+		longestSection = ""
 		
 		for section in sections
-			continue if section.contains ".com"
-			
-			numWords = section.numberOfWords()
-			
-			if numWords > longestNumWords or section.len > longestPart.length
-				longestNumWords = numWords
-				longestPart = section
+			if section.search ".com" == -1
+				numberOfWordsInSection = section.numberOfWords()
 		
-		if longestPart.length > 0 then longestPart.stripWhitespace() else false
+				if numberOfWordsInSection > longestNumberOfWords or section.length > longestSection.length
+					longestNumberOfWords = numberOfWordsInSection
+					longestSection = section
+		
+		if longestSection.length == 0 then false else longestSection.normalize()
+		
 	
 
 
@@ -810,15 +815,14 @@ class DocumentTitleMatchClassifier extends BaseFilter
 
 class IgnoreBlocksAfterContentFilter extends BaseFilter
 	
-	constructor: (self, minimumNumberOfWords = 60) ->
+	constructor: (minimumNumberOfWords = 60) ->
 		@minimumNumberOfWords = minimumNumberOfWords
 
 
 	process: (document) ->
-		
 		numWords = 0
 		foundEndOfText = false
-		hasDetectedChanges = false
+		foundChanges = false
 		
 		for textBlock in document.textBlocks
 			if textBlock.isContent
@@ -829,9 +833,9 @@ class IgnoreBlocksAfterContentFilter extends BaseFilter
 			
 			if foundEndOfText
 				textBlock.isContent = false
-				hasDetectedChanges = true
+				foundChanges = true
 		
-		hasDetectedChanges 
+		foundChanges 
 	
 	
 # IgnoreBlocksAfterContentFromEndFilter
@@ -840,10 +844,11 @@ class IgnoreBlocksAfterContentFilter extends BaseFilter
 class TerminatingBlocksFinder extends BaseFilter
 
 	process: (document) ->
-		hasDetectedChanges = false
+		foundChanges = false
 		
 		for textBlock in document.textBlocks
-			continue if textBlock.numWords >= 15
+			if textBlock.numWords >= 15
+				continue
 			
 			text = textBlock.text?.stripWhitespace()
 			continue if text.length < 8
@@ -865,16 +870,18 @@ class TerminatingBlocksFinder extends BaseFilter
 			
 			if foundMatch
 				textBlock.addLabel TextBlock.EndOfText
-				hasDetectedChanges = true
+				foundChanges = true
 		
-		hasDetectedChanges
+		foundChanges
 	
 	isNumberFollowedByString: (text, possibleMatches) ->
-		matchLocation= text.search /^\D/
+		matchResult= /^\W*\d+/.exec text
 		
-		if matchLocation == 0
+		if matchResult
+			matchEnd = matchResult['index'] + matchResult[0].length
+			
 			for possibleMatch in possibleMatches
-				if text.startsWith(possibleMatch[matchLocation..])
+				if text[matchEnd..].startsWith(possibleMatch)
 					return true
 		
 		false
@@ -885,38 +892,79 @@ class NumWordsRulesClassifier extends BaseFilter
 	
 	process: (document) ->
 		textBlocks = document.textBlocks
-		hasDetectedChanges= false
+		foundChanges = false
+		numberOfTextBlocks  = textBlocks.length
+
+		for currentBlock, i in textBlocks
+			previousBlock = if i > 0 then textBlocks[i-1] else @newPlaceholderTextBlock
+			nextBlock = if (i + 1) < numberOfTextBlocks then textBlocks[i + 1] else @newPlaceholderTextBlock
+			
+			isContent = true
+			
+			if currentBlock.linkDensity > 0.333333
+				isContent = false
+			else if previousBlock.linkDensity <= 0.555556
+				if currentBlock.numWords <= 16 and nextBlock.numWords <= 15 and previousBlock.numWords <= 4
+					isContent = false
+			else if currentBlock.numWords <= 40 and nextBlock.numWords <= 17
+				isContent = false
+			
+			foundChanges = currentBlock.isContent != isContent if not foundChanges
+			currentBlock.isContent = isContent
+		
+		foundChanges
+	
+	newPlaceholderTextBlock: () ->
+		new TextBlock(null, null, null, null, null, null, null, -1)
+
+
+
+
+class DensityRulesClassifier extends BaseFilter
+	
+	process: (document) ->
+		textBlocks = document.textBlocks
+		foundChanges = false
 		
 		numberOfTextBlocks = textBlocks.length
 		
-		for currentTextBlock, index in textBlocks
-			previousTextBlock =  if index > 0 then textBlocks[index - 1] else new TextBlock()
-			nextTextBlock = if index + 1 < numberOfTextBlocks then textBlocks[index + 1] else new TextBlock()
+		
+		for currentBlock, i in textBlocks
+			previousBlock = if i > 0 then textBlocks[i-1] else @newPlaceholderTextBlock
+			nextBlock = if (i + 1) < numberOfTextBlocks then textBlocks[i + 1] else @newPlaceholderTextBlock
 			
-			hasDetectedChanges |= @classify(previousTextBlock, currentTextBlock, nextTextBlock)
-		
-		hasDetectedChanges
-	
-	
-	
-	classify: (previousTextBlock, currentTextBlock, nextTextBlock) ->
-		isContent = true
-		
-		if currentTextBlock.linkDensity > 0.333333
 			isContent = false
-		else if previousTextBlock.linkDensity > 0.555556
-			if currentTextBlock.numWords <= 16 and nextTextBlock.numWords <= 15 and previousTextBlock.numWords <= 4
+			
+			if currentBlock.linkDensity <= 0.333333
+				if previousBlock.linkDensity <= 0.555556
+					if currentBlock.textDensity <= 9
+						if nextBlock.textDensity <= 10
+							if previousBlock.textDensity <= 4
+								isContent = false
+							else
+								isContent = true
+						else
+							isContent = true
+					else
+						if nextBlock.textDensity == 0
+							isContent = false
+						else
+							isContent = true
+				else
+					if nextBlock.textDensity <= 11
+						isContent = false
+					else
+						isContent = true
+			else
 				isContent = false
-		else if currentTextBlock.numWords <= 40 && nextTextBlock.numWords <= 17
-			isContent = false
+			
+			foundChanges = currentBlock.isContent != isContent if not foundChanges
+			currentBlock.isContent = isContent
 		
-		currentTextBlock.isContent = isContent
-
-
-#class DensityRulesClassifier extends BaseFilter
+		foundChanges 
 	
-	
-	
+	newPlaceholderTextBlock: () ->
+		new TextBlock(null, null, null, null, null, null, null, -1)
 
 
 # CanolaFilter
@@ -959,10 +1007,10 @@ class Boilerpipe
 					new NumWordsRulesClassifier(),
 					new IgnoreBlocksAfterContentFilter(),
 					new BlockProximityFusion(1, false, false),
-					# new RemoveNonContentBlocksFilter(),
-					# new BlockProximityFusion(1, true, false),
-					# new KeepLargestBlockFilter(),
-					# new ExpandTitleToContentFilter()
+					new RemoveNonContentBlocksFilter(),
+					new BlockProximityFusion(1, true, false),
+					new KeepLargestBlockFilter(),
+					new ExpandTitleToContentFilter()
 				])
 				
 			
@@ -990,34 +1038,61 @@ class Boilerpipe
 class TestHelper
 	@defaultWords: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec fermentum tincidunt magna, eu pulvinar mauris dapibus pharetra. In varius, nisl a rutrum porta, sem sem semper lacus, et varius urna tellus vel lorem. Nullam urna eros, luctus eget blandit ac, imperdiet feugiat ipsum. Donec laoreet tristique mi a bibendum. Sed pretium bibendum scelerisque. Mauris id pellentesque turpis. Mauris porta adipiscing massa, quis tempus dui pharetra ac. Morbi lacus mauris, feugiat ac tempor ut, congue tincidunt risus. Pellentesque tincidunt adipiscing elit, in fringilla enim scelerisque vel. Nulla facilisi. ".split(' ')
 	
-	@makeDocument: (wordsArray, numAnchorWordsArray, isContentArray, labelArray) ->
+	@exampleText: (desiredNumberOfWords = 10) ->
+		TestHelper.defaultWords[...desiredNumberOfWords].join(' ')
+	
+	@newDocumentWithParameters: (wordsArray, numAnchorWordsArray, isContentArray, labelArray) ->
 		textBlocks = []
 		
-		for words, index in wordsArray
-			if typeof(words) == 'number'
-				numWords = words
-				text = TestHelper.defaultWords[...numWords].join(' ')
+		for word, index in wordsArray
+			if typeof(word) == 'number'
+				text = @exampleText word
 			else
-				text = words
-				numWords = text.count(' ')
+				text = word
+				numWords = text.split(' ').count
 			
 			
-			numAnchorWords = numAnchorWordsArray?[index] || 0
+			numAnchorWords = numAnchorWordsArray?[index] or 0
+			
 			block = new TextBlock(text, null, null, numWords, numAnchorWords, 0, 0, index)
 			block.isContent = isContentArray?[index]
 			
 			label = labelArray?[index]
 			
 			if label
-				if typeof(label) == 'array'
+				if label instanceof Array
 					for l in label
-						block.addLabel(l)
+						block.addLabel l
 				else
-					block.addLabel(label)
+					block.addLabel label
 			
 			textBlocks.push(block)
+		
+		new TextDocument(null, textBlocks)
 	
-		return new TextDocument(null, textBlocks)
+	
+	
+	@newDocumentWithTemplateAndContent: (templateString, contentArray) ->
+		templateArray = templateString.split '*'
+		html = ""
+		templateArrayLength = templateArray.length
+		
+		for templateSection, currentIndex in templateArray
+			content = ''
+			
+			if currentIndex < templateArrayLength - 1
+				content = contentArray[currentIndex]
+			
+				if typeof(content) == 'number'
+					content = @exampleText content
+			
+			html += templateSection + content
+		
+		
+		boilerpipe = new Boilerpipe
+		boilerpipe.documentFromHTML(html)
+
+
 
 
 #  Filters:
@@ -1025,51 +1100,209 @@ class TestHelper
 
 
 
+#= IgnoreBlocksAfterContentFilter
 
-fs = require 'fs'
-request = require 'request'
+
 
 chai = require 'chai'
 chai.should()
 
 
-# 
-# describe "NumWordsRulesClassifier filter", ->
-# 	
-#   it "negative match", ->
-# 		#accepts or rejects block based on machine-trained decision tree rules
-# 		#using features from previous, current and next block (tests middle block only)
-# 		document = TestHelper.makeDocument([2, 10, 10], [0, 0, 0], [true, true, true])
-# 		filter = new NumWordsRulesClassifier()
-# 		isChanged = filter.process(document)
-# 		document.textBlocks[0].isContent.should.be.false
-# 		
-# 	# it "positive match", ->
-# 	# 	document = TestHelper.makeDocument([10, 10, 10], [0, 0, 0], [true, true, true])
-# 	# 	filter = new NumWordsRulesClassifier()
-# 	# 	isChanged = filter.process(document)
-# 	# 	
-# 	# 	console.log document.textBlocks
-# 	# 	document.textBlocks[0].isContent.should.be.true
-# 	# 
+
+describe "TerminatingBlocksFinder", ->
+	
+	it "", ->
+		document = TestHelper.newDocumentWithParameters([
+			"Comments",
+			"Please have your say",
+			"48 Comments today",
+			"Comments can be the first word of article text.  If there are many words in the block, it is not comments",
+			"Thanks for your comments - this feedback is now closed"
+		])
+		
+		filter = new TerminatingBlocksFinder()
+		isChanged = filter.process(document)
+		
+		isEndOfTextArray = document.textBlocks.map (textBlock) ->
+			textBlock.labels.contains TextBlock.EndOfText
+		
+		[true, true, true, false, true].should.deep.equal isEndOfTextArray
+		isChanged .should.be.true
 
 
-describe "BlockProximityFusion filter", ->
+
+describe "DocumentTitleMatchClassifier", ->
+	
+	it "finds the first block who's text matches the pages <title>", ->
+		document = TestHelper.newDocumentWithParameters(["News", "This is the real title", "Red herring"])
+		document.title = "News - This is the real title"
+		
+		filter = new DocumentTitleMatchClassifier(null, true)
+		isChanged = filter.process(document)
+		
+		labels = document.textBlocks.map (textBlock) ->
+			textBlock.labels
+		
+		labels.length.should.be.equal 3
+		labels.should.deep.equal [[], [TextBlock.Title], []]
+		isChanged.should.be.true
+
+
+
+describe "NumWordsRulesClassifier", ->
+	
+  it "negative match", ->
+		#accepts or rejects block based on machine-trained decision tree rules
+		#using features from previous, current and next block (tests middle block only)
+		document = TestHelper.newDocumentWithParameters([2, 10, 10], [0, 0, 0], [true, true, true])
+		filter = new NumWordsRulesClassifier()
+		isChanged = filter.process(document)
+		
+		document.textBlocks[1].isContent.should.be.false
+		isChanged.should.be.true
+	
+	
+	it "positive match", ->
+		document = TestHelper.newDocumentWithParameters([10, 10, 10], [0, 0, 0], [true, true, true])
+		filter = new NumWordsRulesClassifier()
+		isChanged = filter.process(document)
+		
+		document.textBlocks[1].isContent.should.be.true
+		isChanged.should.be.true
+
+
+
+describe "IgnoreBlocksAfterContentFilter", ->
+		
+		it "", ->
+			label = TextBlock.EndOfText
+			document = TestHelper.newDocumentWithParameters([10, 30, 50, 80, 20], null, [false, true, true, true, true], [label, null, null,label, null])
+			
+			filter = new IgnoreBlocksAfterContentFilter(60)
+			isChanged = filter.process(document)
+			isContentArray = document.textBlocks.map (textBlock) ->
+				textBlock.isContent
+			
+			isContentArray.should.deep.equals [false, true, true, false, false]
+			isChanged.should.be.true
+
+
+
+describe "BlockProximityFusion", ->
 	
 	it "fuses blocks which are close to each other", ->
 		#fuse blocks close to each other
-		document = TestHelper.makeDocument([10, 10, 10, 10, 10, 10, 10], null, [false, true, true, true, true, true, false])
+		document = TestHelper.newDocumentWithParameters([10, 10, 10, 10, 10, 10, 10], null, [false, true, true, true, true, true, false])
 		filter = new BlockProximityFusion(1, true, false)
 		
-		indexesOfBlocks = ([textBlock.offsetBlocksStart, textBlock.offsetBlocksEnd] for textBlock in document.textBlocks)
-		console.log indexesOfBlocks
+		indexesOfBlocks = document.textBlocks.map (textBlock) ->
+			[textBlock.offsetStart, textBlock.offsetEnd]
 		
 		isChanged = filter.process(document)
 		
-		indexesOfBlocks = ([textBlock.offsetBlocksStart, textBlock.offsetBlocksEnd] for textBlock in document.textBlocks)
-		console.log indexesOfBlocks
+		indexesOfBlocks = document.textBlocks.map (textBlock) ->
+			[textBlock.offsetStart, textBlock.offsetEnd]
 		
-		indexesOfBlocks.should.equal [[0, 0], [1, 5], [6, 6]]
+		indexesOfBlocks.should.deep.equal [[0, 0], [1, 5], [6, 6]]
 		isChanged.should.be.true
+
+
+
+describe "RemoveNonContentBlocksFilter", ->
+
+	it "removes all blocks which are marked as not content", ->
+		document = TestHelper.newDocumentWithParameters([5, 100, 10, 50, 80], null, [false, true, false, true, false])
+		resultingTextBlocks = [document.textBlocks[1], document.textBlocks[3]]
 		
+		filter = new RemoveNonContentBlocksFilter()
+		isChanged = filter.process(document)
+		
+		isContentArray = document.textBlocks.map (textBlock) ->
+			textBlock.isContent
+		
+		isContentArray.should.deep.equals [true, true]
+		document.textBlocks.should.deep.equals resultingTextBlocks
+		isChanged.should.be.true
+
+
+
+describe "KeepLargestBlockFilter", ->
+	
+	it "Marks the largest block as being the only content", ->
+		document = TestHelper.newDocumentWithParameters([10, 10, 50, 10], null, [false, true, true, true])
+		filter = new KeepLargestBlockFilter()
+		isChanged = filter.process(document)
+		
+		isContentArray = document.textBlocks.map (textBlock) ->
+			textBlock.isContent
+		
+		isContentArray.should.deep.equals [false, false, true, false]
+		isChanged.should.be.true
+
+
+
+describe "ExpandTitleToContentFilter", ->
+	
+	it "", ->
+		mightBe = TextBlock.MightBeContent
+		document = TestHelper.newDocumentWithParameters([10 ,10 ,10 ,10], null, [false, false, false, true], [mightBe, [mightBe, TextBlock.Title], mightBe, mightBe])
+		filter = new ExpandTitleToContentFilter()
+				
+		isChanged = filter.process(document)
+		
+		isContentArray = document.textBlocks.map (textBlock) ->
+			textBlock.isContent
+		
+		isContentArray.should.deep.equals [false, true, true, true]
+		isChanged.should.be.true
+
+
+describe "DensityRulesClassifier", ->
+	
+	it "", ->
+		#accepts or rejects block based on a different set of machine-trained decision tree rules
+		#using features from previous, current and next block
+		document = TestHelper.newDocumentWithParameters([10, 10, 5], [10, 0, 0], [true, true, true])
+		filter = new DensityRulesClassifier()
+		isChanged = filter.process(document)
+		
+		document.textBlocks[1].isContent.should.be.false
+		isChanged.should.be.true
+
+
+
+
+describe "TextBlock", ->
+	
+	it "calculate tag levels", ->
+		template = "<html><body><div><p><span><a href='x.html'>*</a></span></p>*</div></body></html>"
+		document = TestHelper.newDocumentWithTemplateAndContent template, [5, 6]
+		
+		textBlocks= document.textBlocks
+		tagLevelArray = textBlocks.map (textBlock) ->
+			textBlock.tagLevel
+		
+		tagLevelArray.should.deep.equal [5, 3]
+	
+	
+	it "merges text blocks into one", ->
+		block1 = new TextBlock("AA BB CC ", [0], null, 3, 3, 3, 1, 0)
+		block1.addLabel(TextBlock.MightBeContent)
+		
+		block2 = new TextBlock("DD EE FF GG HH II JJ .", [1], null, 6, 0, 6, 2, 1)
+		block2.addLabel(TextBlock.ArticleMetadata)
+		
+		block1.mergeNext(block2)
+		
+		
+		block1.text.should.equal "AA BB CC \nDD EE FF GG HH II JJ ."
+		block1.numWords.should.equal 9
+		block1.numWordsInAnchorText.should.equal 3
+		block1.linkDensity.should.equal 1.0 / 3.0
+		block1.textDensity.should.equal 3
+		
+		block1.labels.should.deep.equal [TextBlock.MightBeContent, TextBlock.ArticleMetadata]
+		block1.offsetStart.should.equal 0
+		block1.offsetEnd.should.equal 1
+
 

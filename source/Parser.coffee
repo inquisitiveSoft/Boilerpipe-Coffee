@@ -48,7 +48,7 @@ class BoilerpipeParser
 		@textBlocks = []
 	
 		# Internal state
-		@offsetBlocks = 0
+		@offset = 0
 		@lastStartTag = null
 		@textBlocks = []
 		@labelStacks = []
@@ -235,10 +235,10 @@ class BoilerpipeParser
 				numWordsInWrappedLines = numWords - numWordsCurrentLine
 			
 			currentText = @textBuffer
-			textBlock = new TextBlock(currentText, @currentContainedTextElements, @blockTagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, @offsetBlocks)
+			textBlock = new TextBlock(currentText, @currentContainedTextElements, @blockTagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, @offset)
 			@textBlocks.push(textBlock)
 			
-			@offsetBlocks++
+			@offset++
 			@blockTagLevel = null
 			@currentContainedTextElements = []
 		

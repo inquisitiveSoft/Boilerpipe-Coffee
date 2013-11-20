@@ -18,7 +18,7 @@ String::isWhitespace = () ->
 	@.length > 0 and /^\W+$/.test(@)
 
 String::startsWith = (match) ->
-	@.substring(0, match.length) == match if match?
+	@.substring(0, match.length) == match
 
 
 

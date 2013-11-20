@@ -57,12 +57,12 @@ class FilterChain extends BaseFilter
 		@filters = filters
 	
 	process: (document) ->
-		hasDetectedChanges = false
+		foundChanges = false
 		
 		for filter in @filters
-			hasDetectedChanges = filter.process(document)
+			foundChanges = filter.process(document)
 		
-		hasDetectedChanges
+		foundChanges
 
 
 
@@ -80,14 +80,14 @@ class MarkEverythingContentFilter extends  BaseFilter
 class RemoveNonContentBlocksFilter extends BaseFilter
 	
 	process: (document) ->
-		hasChanges = false
+		foundChanges = false
 		
 		for textBlock in document.textBlocks
 			if !textBlock?.isContent
 				document.removeTextBlock(textBlock) 
-				hasChanges = true
+				foundChanges = true
 		
-		hasChanges 
+		foundChanges 
 
 
 # MinWordsFilter
@@ -108,7 +108,7 @@ class SimpleBlockFusionProcessor extends BaseFilter
 		textBlocks = document.textBlocks
 		return false if textBlocks.length < 2
 		
-		hasDetectedChanges = false
+		foundChanges = false
 		previousTextBlock = textBlocks[0]
 		count = 0
 		
@@ -116,12 +116,12 @@ class SimpleBlockFusionProcessor extends BaseFilter
 			if previousTextBlock? and previousTextBlock.textDensity == currentTextBlock.textDensity
 				previousTextBlock.mergeNext(currentTextBlock)
 				document.removeTextBlock(currentTextBlock)
-				hasDetectedChanges = true
+				foundChanges = true
 			else
 				previousTextBlock = currentTextBlock
 		
 		console.log document.content()
-		hasDetectedChanges
+		foundChanges
 
 
 # ContentFusion
@@ -154,37 +154,38 @@ class BlockProximityFusion extends BaseFilter
 					break
 			
 			return false if !startIndex
-		
+		else
+			startIndex = 0
 		
 		previousBlock = textBlocks[startIndex]
 		hasFoundChanges = false
-		startIndex = 0
 		
 		for textBlock in textBlocks[startIndex + 1..]
 			if not textBlock.isContent
 				previousBlock = textBlock
-				continue 
+			else 
+				diffBlocks = textBlock.offsetStart - previousBlock.offsetEnd - 1;
+				ok = false
 			
-			diffBlocks = textBlock.offsetBlocksStart - previousBlock.offsetBlocksEnd - 1;
-			ok = false
+				if diffBlocks <= @maxBlocksDistance
+					if !(@contentOnly and not previousBlock.isContent or not textBlock.isContent) or
+					not (@sameTagLevelOnly and previousBlock.tagLevel != textBlock.tagLevel)
+						ok = true
 			
-			if diffBlocks <= @maxBlocksDistance
-				if !(@contentOnly and not previousBlock.isContent or not textBlock.isContent) or
-				not (@sameTagLevelOnly and previousBlock.tagLevel != textBlock.tagLevel)
-					ok = true
-			
-			if ok
-				previousBlock.mergeNext(textBlock)
-				document.removeTextBlock(textBlock)	#remove current block
-				hasFoundChanges = true
-			else
-				previousBlock = textBlock
+				if ok
+					
+					previousBlock.mergeNext(textBlock)
+					document.removeTextBlock(textBlock)	#remove current block
+					hasFoundChanges = true
+				else
+					previousBlock = textBlock
 		
 		hasFoundChanges
 
 
-class KeepLargestBlockFilter extends BaseFilter
 
+
+class KeepLargestBlockFilter extends BaseFilter
 
 	constructor: (expandToSameLevelText = false) ->
 		@expandToSameLevelText = expandToSameLevelText
@@ -226,25 +227,26 @@ class KeepLargestBlockFilter extends BaseFilter
 class ExpandTitleToContentFilter extends BaseFilter
 	
 	process: (document) ->
-		titleIndex = -1
-		contentStart = -1
-		textBlockIndex= 0
+		titleIndex = null
+		contentStart = null
 		
-		for textBlock in document.textBlocks
-			if contentStart == -1
-				titleIndex = index if textBlock.hasLabel(TextBlock.TITLE)
-				contentStart = textBlockIndex if textBlock.isContent
+		for textBlock, currentIndex in document.textBlocks
+			if contentStart == null and textBlock.hasLabel(TextBlock.Title)
+				titleIndex = currentIndex
 			
-			textBlockIndex += 1
+			if contentStart == null and textBlock.isContent
+				contentStart = currentIndex
 		
-		hasDetectedChanges= false
+		foundChanges = false
 		
-		if contentStart > titleIndex or titleIndex != -1
-			for textBlock in document.textBlocks[titleIndex..contentStart]
-				if textBlock.hasLabel(TextBlock.MightBeContent)
-					hasDetectedChanges |= textBlock.isContent = true
+		return false if contentStart <= titleIndex or titleIndex == null
 		
-		hasDetectedChanges
+		for textBlock in document.textBlocks[titleIndex..contentStart]
+			if textBlock.hasLabel(TextBlock.MightBeContent)
+				textBlock.isContent = true
+				foundChanges = true
+		
+		foundChanges
 
 
 
@@ -263,6 +265,23 @@ class DocumentTitleMatchClassifier extends BaseFilter
 			@potentialTitles = @findPotentialTitles("title")
 	
 	
+	
+	process: (document) ->
+		console.log ""
+		potentialTitles = @findPotentialTitles(document.title) if @useDocumentTitle		
+		return false if !potentialTitles or potentialTitles.length == 0
+		
+		for textBlock in document.textBlocks
+			text = textBlock.text.normalize()
+			
+			for potentialTitle in potentialTitles
+				if potentialTitle.normalize() == text
+					textBlock.addLabel(TextBlock.Title)
+					return true
+		
+		false
+	
+	
 	findPotentialTitles: (title) ->
 		title = title?.stripWhitespace()
 		return null if !title? or title.length == 0
@@ -270,46 +289,37 @@ class DocumentTitleMatchClassifier extends BaseFilter
 		potentialTitles = []
 		potentialTitles.push title
 		
-		@longestMatch(title, pattern) for pattern in [
+		patterns = [
 			/[ ]*[\||:][ ]*/,
 			/[ ]*[\||:\(\)][ ]*/,
 			/[ ]*[\||:\(\)\-][ ]*/,
 			/[ ]*[\||,|:\(\)\-][ ]*/
 		]
-	
-	
-	process: (document) ->
-		self.potentialTitles = @findPotentialTitles(document.title) if @useDocTitle
-		return false if !@potentialTitles? or @potentialTitles.length == 0
 		
-		for textBlock in document.textBlocks
-			text = textBlock.text.toLowerCase().stripWhitespace()
-			
-			for potentialTitle in @potentialTitles
-				if potentialTitle?.toLowerCase() == text
-					textBlock.addLabel(TextBlock.Title)
-					return true
+		for pattern in patterns
+			match = @longestMatch(title, pattern) 
+			potentialTitles.push match if match
 		
-		false
+		potentialTitles	
 	
 	
 	longestMatch: (title, pattern) ->
 		sections = title.split pattern
-		return null if sections.length == 1
+		return null if sections.length == 0
 		
-		longestNumWords = 0
-		longestPart = ""
+		longestNumberOfWords = 0
+		longestSection = ""
 		
 		for section in sections
-			continue if section.contains ".com"
-			
-			numWords = section.numberOfWords()
-			
-			if numWords > longestNumWords or section.len > longestPart.length
-				longestNumWords = numWords
-				longestPart = section
+			if section.search ".com" == -1
+				numberOfWordsInSection = section.numberOfWords()
 		
-		if longestPart.length > 0 then longestPart.stripWhitespace() else false
+				if numberOfWordsInSection > longestNumberOfWords or section.length > longestSection.length
+					longestNumberOfWords = numberOfWordsInSection
+					longestSection = section
+		
+		if longestSection.length == 0 then false else longestSection.normalize()
+		
 	
 
 
@@ -325,15 +335,14 @@ class DocumentTitleMatchClassifier extends BaseFilter
 
 class IgnoreBlocksAfterContentFilter extends BaseFilter
 	
-	constructor: (self, minimumNumberOfWords = 60) ->
+	constructor: (minimumNumberOfWords = 60) ->
 		@minimumNumberOfWords = minimumNumberOfWords
 
 
 	process: (document) ->
-		
 		numWords = 0
 		foundEndOfText = false
-		hasDetectedChanges = false
+		foundChanges = false
 		
 		for textBlock in document.textBlocks
 			if textBlock.isContent
@@ -344,9 +353,9 @@ class IgnoreBlocksAfterContentFilter extends BaseFilter
 			
 			if foundEndOfText
 				textBlock.isContent = false
-				hasDetectedChanges = true
+				foundChanges = true
 		
-		hasDetectedChanges 
+		foundChanges 
 	
 	
 # IgnoreBlocksAfterContentFromEndFilter
@@ -355,10 +364,11 @@ class IgnoreBlocksAfterContentFilter extends BaseFilter
 class TerminatingBlocksFinder extends BaseFilter
 
 	process: (document) ->
-		hasDetectedChanges = false
+		foundChanges = false
 		
 		for textBlock in document.textBlocks
-			continue if textBlock.numWords >= 15
+			if textBlock.numWords >= 15
+				continue
 			
 			text = textBlock.text?.stripWhitespace()
 			continue if text.length < 8
@@ -380,16 +390,18 @@ class TerminatingBlocksFinder extends BaseFilter
 			
 			if foundMatch
 				textBlock.addLabel TextBlock.EndOfText
-				hasDetectedChanges = true
+				foundChanges = true
 		
-		hasDetectedChanges
+		foundChanges
 	
 	isNumberFollowedByString: (text, possibleMatches) ->
-		matchLocation= text.search /^\D/
+		matchResult= /^\W*\d+/.exec text
 		
-		if matchLocation == 0
+		if matchResult
+			matchEnd = matchResult['index'] + matchResult[0].length
+			
 			for possibleMatch in possibleMatches
-				if text.startsWith(possibleMatch[matchLocation..])
+				if text[matchEnd..].startsWith(possibleMatch)
 					return true
 		
 		false
@@ -400,38 +412,79 @@ class NumWordsRulesClassifier extends BaseFilter
 	
 	process: (document) ->
 		textBlocks = document.textBlocks
-		hasDetectedChanges= false
+		foundChanges = false
+		numberOfTextBlocks  = textBlocks.length
+
+		for currentBlock, i in textBlocks
+			previousBlock = if i > 0 then textBlocks[i-1] else @newPlaceholderTextBlock
+			nextBlock = if (i + 1) < numberOfTextBlocks then textBlocks[i + 1] else @newPlaceholderTextBlock
+			
+			isContent = true
+			
+			if currentBlock.linkDensity > 0.333333
+				isContent = false
+			else if previousBlock.linkDensity <= 0.555556
+				if currentBlock.numWords <= 16 and nextBlock.numWords <= 15 and previousBlock.numWords <= 4
+					isContent = false
+			else if currentBlock.numWords <= 40 and nextBlock.numWords <= 17
+				isContent = false
+			
+			foundChanges = currentBlock.isContent != isContent if not foundChanges
+			currentBlock.isContent = isContent
+		
+		foundChanges
+	
+	newPlaceholderTextBlock: () ->
+		new TextBlock(null, null, null, null, null, null, null, -1)
+
+
+
+
+class DensityRulesClassifier extends BaseFilter
+	
+	process: (document) ->
+		textBlocks = document.textBlocks
+		foundChanges = false
 		
 		numberOfTextBlocks = textBlocks.length
 		
-		for currentTextBlock, index in textBlocks
-			previousTextBlock =  if index > 0 then textBlocks[index - 1] else new TextBlock()
-			nextTextBlock = if index + 1 < numberOfTextBlocks then textBlocks[index + 1] else new TextBlock()
+		
+		for currentBlock, i in textBlocks
+			previousBlock = if i > 0 then textBlocks[i-1] else @newPlaceholderTextBlock
+			nextBlock = if (i + 1) < numberOfTextBlocks then textBlocks[i + 1] else @newPlaceholderTextBlock
 			
-			hasDetectedChanges |= @classify(previousTextBlock, currentTextBlock, nextTextBlock)
-		
-		hasDetectedChanges
-	
-	
-	
-	classify: (previousTextBlock, currentTextBlock, nextTextBlock) ->
-		isContent = true
-		
-		if currentTextBlock.linkDensity > 0.333333
 			isContent = false
-		else if previousTextBlock.linkDensity > 0.555556
-			if currentTextBlock.numWords <= 16 and nextTextBlock.numWords <= 15 and previousTextBlock.numWords <= 4
+			
+			if currentBlock.linkDensity <= 0.333333
+				if previousBlock.linkDensity <= 0.555556
+					if currentBlock.textDensity <= 9
+						if nextBlock.textDensity <= 10
+							if previousBlock.textDensity <= 4
+								isContent = false
+							else
+								isContent = true
+						else
+							isContent = true
+					else
+						if nextBlock.textDensity == 0
+							isContent = false
+						else
+							isContent = true
+				else
+					if nextBlock.textDensity <= 11
+						isContent = false
+					else
+						isContent = true
+			else
 				isContent = false
-		else if currentTextBlock.numWords <= 40 && nextTextBlock.numWords <= 17
-			isContent = false
+			
+			foundChanges = currentBlock.isContent != isContent if not foundChanges
+			currentBlock.isContent = isContent
 		
-		currentTextBlock.isContent = isContent
-
-
-#class DensityRulesClassifier extends BaseFilter
+		foundChanges 
 	
-	
-	
+	newPlaceholderTextBlock: () ->
+		new TextBlock(null, null, null, null, null, null, null, -1)
 
 
 # CanolaFilter

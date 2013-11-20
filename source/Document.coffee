@@ -5,8 +5,8 @@ class TextBlock
 	
 	# Standard block labels
 	@Title: "Title"
-	# @ArticleMetadata: "ArticleMetadata"
-	# @MightBeContent: "MightBeContent"
+	@ArticleMetadata: "ArticleMetadata"
+	@MightBeContent: "MightBeContent"
 	# @StrictlyNotContent: "StrictlyNotContent"
 	# @HorizontalRule = "@HorizontalRule"
 	# @MarkupPrefix = "<"
@@ -15,27 +15,26 @@ class TextBlock
 	
 	@DefaultFullTextWordsThreshold: 9
 	
-	constructor: (text, currentContainedTextElements, tagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, offsetBlocks) ->
+	constructor: (text, containedTextElements, tagLevel, numWords, numWordsInAnchorText, numWordsInWrappedLines, numWrappedLines, offset) ->
 		@text = text?.replace /^\s+|\n+$/g, ""
 		
-		@currentContainedTextElements = currentContainedTextElements
-		@numWords = numWords
+		@containedTextElements = containedTextElements || []
+		@numWords = numWords || text?.split(/\W+/).length || 0
 		@numWordsInAnchorText = numWordsInAnchorText
 		@numWordsInWrappedLines = numWordsInWrappedLines
 		@numWrappedLines = numWrappedLines
-		@offsetBlocksStart = offsetBlocks or 0
-		@offsetBlocksEnd = offsetBlocks or 0
-		@tagLevel = tagLevel
-		@isContent = false
-		
+		@offsetStart = offset or 0
+		@offsetEnd = offset or 0
+		@tagLevel = tagLevel || 0
 		@labels = []
+		@isContent = false
 		
 		@calculateDensities()
 	
 	
 	description: ->
 		description = "TextBlock:\n"
-		description += "   offsetBlocksStart - offsetBlocksEnd = #{@offsetBlocksStart} - #{@offsetBlocksEnd}\n"
+		description += "   offsetStart - offsetEnd = #{@offsetStart} - #{@offsetEnd}\n"
 		description += "   tagLevel = #{@tagLevel}\n"
 		description += "   numWords = #{@numWords}\n"
 		description += "   numWordsInAnchorText = #{@numWordsInAnchorText}\n"
@@ -60,31 +59,27 @@ class TextBlock
 	
 	
 	mergeNext: (nextTextBlock) ->
-		if !text?
-			@text = ""
-		
 		@text += '\n' + nextTextBlock.text
 		@numWords += nextTextBlock.numWords
 		@numWordsInAnchorText += nextTextBlock.numWordsInAnchorText
 		@numWordsInWrappedLines += nextTextBlock.numWordsInWrappedLines
 		@numWrappedLines += nextTextBlock.numWrappedLines
-		@offsetBlocksStart = Math.min @offsetBlocksStart, nextTextBlock.offsetBlocksStart
-		@offsetBlocksEnd = Math.max @offsetBlocksEnd, nextTextBlock.offsetBlocksEnd
+		@offsetStart = Math.min @offsetStart, nextTextBlock.offsetStart
+		@offsetEnd = Math.max @offsetEnd, nextTextBlock.offsetEnd
+		
+		@isContent |= nextTextBlock.isContent
+		@containedTextElements.merge nextTextBlock.containedTextElements
+		@labels.merge nextTextBlock.labels
+		@tagLevel = Math.min @tagLevel, nextTextBlock.tagLevel
 		
 		@calculateDensities()
-		@isContent |= nextTextBlock.isContent
-		@containedTextElements |= nextTextBlock.containedTextElements
-		@labels |= nextTextBlock.labels
-		@tagLevel = Math.min @tagLevel, nextTextBlock.tagLevel
 	
 	
 	addLabel: (label) ->
-		@labels.push(label) if label?
-	
+		@labels.push(label)
 	
 	hasLabel: (label) ->
-		return @labels.contains(label) if label?
-		false
+		@labels.contains(label)
 	
 	numFullTextWords: (minTextDensity = TextBlock.DefaultFullTextWordsThreshold) ->
 		if @textDensity >= minTextDensity then @numWords else 0
