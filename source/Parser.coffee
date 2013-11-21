@@ -182,7 +182,7 @@ class BoilerpipeParser
 		
 		if !@inBody? or @inBody <= 0
 			if @lastStartTag?.normalize() == "title"
-				@title = @textBuffer.stripWhitespace()
+				@title ||= @textBuffer.stripWhitespace()
 			
 			@clearTextBuffer()
 			return
@@ -286,7 +286,7 @@ class BoilerpipeParser
 			"abbr"			:	BoilerpipeParser.InlineWhitespaceElementAction,
 			"acronym"		:	BoilerpipeParser.InlineWhitespaceElementAction,
 			"font"			:	BoilerpipeParser.InlineNoWhitespaceElementAction,
-		
+			
 			# could also use TA_FONT 
 			# added in 1.1.1
 			"noscript"	:	BoilerpipeParser.IgnorableElementAction 

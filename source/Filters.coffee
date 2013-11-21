@@ -120,7 +120,6 @@ class SimpleBlockFusionProcessor extends BaseFilter
 			else
 				previousTextBlock = currentTextBlock
 		
-		console.log document.content()
 		foundChanges
 
 
@@ -267,7 +266,6 @@ class DocumentTitleMatchClassifier extends BaseFilter
 	
 	
 	process: (document) ->
-		console.log ""
 		potentialTitles = @findPotentialTitles(document.title) if @useDocumentTitle		
 		return false if !potentialTitles or potentialTitles.length == 0
 		
@@ -459,24 +457,14 @@ class DensityRulesClassifier extends BaseFilter
 				if previousBlock.linkDensity <= 0.555556
 					if currentBlock.textDensity <= 9
 						if nextBlock.textDensity <= 10
-							if previousBlock.textDensity <= 4
-								isContent = false
-							else
+							if previousBlock.textDensity > 4
 								isContent = true
 						else
 							isContent = true
-					else
-						if nextBlock.textDensity == 0
-							isContent = false
-						else
+					else if nextBlock.textDensity != 0
 							isContent = true
-				else
-					if nextBlock.textDensity <= 11
-						isContent = false
-					else
+				else if nextBlock.textDensity > 11
 						isContent = true
-			else
-				isContent = false
 			
 			foundChanges = currentBlock.isContent != isContent if not foundChanges
 			currentBlock.isContent = isContent

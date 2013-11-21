@@ -5,12 +5,13 @@
 class Boilerpipe
 	
 	# Filter types
-	@ArticleExtractor: "ArticleExtractor"
 	@DefaultExtractor: "DefaultExtractor"
+	@ArticleExtractor: "ArticleExtractor"
 	@KeepEverythingExtractor: "KeepEverythingExtractor"
+	@Unfiltered: "Unfiltered"
 	
 	
-	documentFromHTML: (html, filterType) ->
+	@documentFromHTML: (html, filterType) ->
 		parser = new BoilerpipeParser
 		document = parser.parseDocumentFromHTML(html)
 		
@@ -20,7 +21,7 @@ class Boilerpipe
 		document
 	
 	
-	filterChainForType: (filterType) ->
+	@filterChainForType: (filterType) ->
 		switch filterType
 			
 			when Boilerpipe.ArticleExtractor
@@ -47,6 +48,10 @@ class Boilerpipe
 				new FilterChain([
 					new MarkEverythingContentFilter()
 				])
+			
+			
+			when Boilerpipe.Unfiltered
+				# Do nothing.
 			
 			else
 				###

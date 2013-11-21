@@ -6,15 +6,11 @@ path = require 'path'
 
 
 getContentFromHTML = (html) ->
-	boilerpipe = new Boilerpipe
-	document = boilerpipe.documentFromHTML(html, Boilerpipe.ArticleExtractor)
-	
-	# for textBlock in document.contentBlocks()
-	# 	console.log textBlock.description() + "\n"
+	document = Boilerpipe.documentFromHTML(html, Boilerpipe.ArticleExtractor)
 	
 	console.log "number of text blocks: #{document.textBlocks.length}"
 	console.log "number of content blocks: #{document.numberOfContentBlocks()}"
-	console.log document.content()
+	console.log "content length: #{document.content().length}"
 
 
 getContentFromFile = (filePath) ->

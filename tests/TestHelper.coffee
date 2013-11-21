@@ -3,10 +3,9 @@
 class TestHelper
 	@defaultWords: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Donec fermentum tincidunt magna, eu pulvinar mauris dapibus pharetra. In varius, nisl a rutrum porta, sem sem semper lacus, et varius urna tellus vel lorem. Nullam urna eros, luctus eget blandit ac, imperdiet feugiat ipsum. Donec laoreet tristique mi a bibendum. Sed pretium bibendum scelerisque. Mauris id pellentesque turpis. Mauris porta adipiscing massa, quis tempus dui pharetra ac. Morbi lacus mauris, feugiat ac tempor ut, congue tincidunt risus. Pellentesque tincidunt adipiscing elit, in fringilla enim scelerisque vel. Nulla facilisi. ".split(' ')
 	
-	@exampleText: (desiredNumberOfWords = 10) ->
-		TestHelper.defaultWords[...desiredNumberOfWords].join(' ')
 	
-	@newDocumentWithParameters: (wordsArray, numAnchorWordsArray, isContentArray, labelArray) ->
+	
+	@documentWithParameters: (wordsArray, numAnchorWordsArray, isContentArray, labelArray) ->
 		textBlocks = []
 		
 		for word, index in wordsArray
@@ -37,7 +36,7 @@ class TestHelper
 	
 	
 	
-	@newDocumentWithTemplateAndContent: (templateString, contentArray) ->
+	@documentFromTemplate: (templateString, contentArray, filterType) ->
 		templateArray = templateString.split '*'
 		html = ""
 		templateArrayLength = templateArray.length
@@ -53,7 +52,10 @@ class TestHelper
 			
 			html += templateSection + content
 		
+		filterType ||= Boilerpipe.Unfiltered
+		Boilerpipe.documentFromHTML(html, filterType)
 		
-		boilerpipe = new Boilerpipe
-		boilerpipe.documentFromHTML(html)
+		
+	@exampleText: (desiredNumberOfWords = 10) ->
+		TestHelper.defaultWords[...desiredNumberOfWords].join(' ')
 
