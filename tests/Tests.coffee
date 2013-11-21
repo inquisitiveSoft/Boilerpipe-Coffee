@@ -88,6 +88,37 @@ describe "parsing documents", ->
 		textArray.should.deep.equal [content[0], content[1], content[2] + content[3]]
 	
 	
+	it "blocks", ->
+		template = "<html><body><p>*</p><div>*<p>*</p>*</div></body></html>"
+		content = [4,5,6,7]
+		document = TestHelper.documentFromTemplate template, content
+		
+		textBlocks = document.textBlocks
+		textArray = for textBlock in textBlocks
+			textBlock.text
+			
+		numWords = for textBlock in textBlocks
+			textBlock.numWords
+		
+		expectedContent = content.map (item) ->
+			if typeof(item) == 'number' then TestHelper.exampleText item else item
+		
+		textArray.should.deep.equal expectedContent
+		numWords.should.deep.equal content
+	
+	
+	it "ignorable elements", ->
+		template = "<html><body><p>*</p><option><p>*</p></option></body></html>"
+		content = [10, 12]
+		document = TestHelper.documentFromTemplate template, content
+		
+		textBlocks = document.textBlocks
+		textArray = for textBlock in textBlocks
+			textBlock.text
+		
+		textArray.should.deep.equal [TestHelper.exampleText(10)]
+	
+	
 	it "block indexes", ->
 		template="<html><body><p>*  </p>  <p> * </p><p>*  </p><p>*  </p></body></html>"
 		document = TestHelper.documentFromTemplate template, [11, 12, 13, 14]
@@ -130,6 +161,46 @@ describe "parsing documents", ->
 		block1.labels.should.deep.equal [TextBlock.MightBeContent, TextBlock.ArticleMetadata]
 		block1.offsetStart.should.equal 0
 		block1.offsetEnd.should.equal 1
+
+
+
+
+###
+Tests for individual filters
+###
+
+
+describe "MarkEverythingContentFilter", ->
+	
+	it "", ->
+		document = TestHelper.documentWithParameters [5, 100, 80], null, [false, true, false]
+		
+		isContentBefore = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		filter = new MarkEverythingContentFilter()
+		isChanged = filter.process(document)
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		isContentArray.should.deep.equal [true, true, true]
+
+
+
+describe "Inverted", ->
+	
+	it "inverts the isContent flag for each block", ->
+		document = TestHelper.documentWithParameters [5, 100, 80], null, [false, true, false]
+		
+		isContentBefore = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		filter = new InvertedFilter()
+		isChanged = filter.process(document)
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		isContentArray.should.deep.equal [true, false, true]
 
 
 
@@ -192,6 +263,22 @@ describe "NumWordsRulesClassifier", ->
 		isChanged = filter.process(document)
 		
 		document.textBlocks[1].isContent.should.be.true
+		isChanged.should.be.true
+
+
+
+describe "MinClauseWordsFilter", ->
+	
+	it "looks for clauses", ->
+		content = ["This is a clause, because it is separated by a comma.", "Real short", "Lots of, very, very, very, small, clauses.", "If acceptClausesWithoutDelimiter is false then clauses that don't end in punctuation don't count"]
+		document = TestHelper.documentWithParameters(content, null, [true, true, true, true])
+		filter = new MinClauseWordsFilter(5, false)
+		isChanged = filter.process(document)
+		
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		isContentArray.should.deep.equal [true, false, false, false]
 		isChanged.should.be.true
 
 

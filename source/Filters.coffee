@@ -74,7 +74,18 @@ class MarkEverythingContentFilter extends  BaseFilter
 			textBlock.isContent = true
 
 
-# InvertedFilter
+
+class InvertedFilter extends  BaseFilter
+
+	process: (document) ->
+		textBlocks = document.textBlocks
+		return false if textBlocks.length == 0
+		
+		for textBlock in textBlocks 
+			textBlock.isContent = !textBlock.isContent
+		
+		true
+
 
 
 class RemoveNonContentBlocksFilter extends BaseFilter
@@ -90,8 +101,61 @@ class RemoveNonContentBlocksFilter extends BaseFilter
 		foundChanges 
 
 
-# MinWordsFilter
-# MinClauseWordsFilter
+class MinWordsFilter extends BaseFilter
+	
+	constructor: (minWords) ->
+		@minWords = minWords
+	
+	
+	process: (document) ->
+		foundChanges = false
+		
+		for textBlock in document.textBlocks
+			if textBlock.isContent and tb.getNumWords() < self.minWords
+				textBlock.isContent = false
+				foundChanges = true
+		
+		foundChanges
+
+
+class MinClauseWordsFilter extends BaseFilter
+	
+	#  since clauses should *always end* with a delimiter, we normally
+	#  don't consider text without one
+	
+	constructor: (minWords = 5, acceptClausesWithoutDelimiter = false) ->
+		@minWords = minWords
+		@acceptClausesWithoutDelimiter = acceptClausesWithoutDelimiter
+	
+	
+	process: (document) =>
+		foundChanges = false
+		
+		for textBlock in document.textBlocks
+			if textBlock.isContent
+				hasClause = false
+				
+				text = textBlock.text + ' '
+				possibleClauses = text.split /\b[\,\.\:\;\!\?]+(?:\s+|\Z)/
+				numberOfClauses = possibleClauses.length
+				
+				for possibleClause, currentIndex in possibleClauses
+					if currentIndex < numberOfClauses - 1 or @acceptClausesWithoutDelimiter
+						hasClause = @isClauseAccepted(possibleClause)
+						break if hasClause
+				
+				if !hasClause
+					textBlock.isContent = false
+					foundChanges = true
+		
+		foundChanges
+	
+	
+	isClauseAccepted: (text) ->
+		words = text.split(/\s+/)
+		words and words.length >= @minWords
+
+
 # SplitParagraphBlocksFilter
 # SurroundingToContentFilte
 # LabelToBoilerplateFilter

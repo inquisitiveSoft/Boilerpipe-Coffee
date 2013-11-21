@@ -554,7 +554,18 @@ class MarkEverythingContentFilter extends  BaseFilter
 			textBlock.isContent = true
 
 
-# InvertedFilter
+
+class InvertedFilter extends  BaseFilter
+
+	process: (document) ->
+		textBlocks = document.textBlocks
+		return false if textBlocks.length == 0
+		
+		for textBlock in textBlocks 
+			textBlock.isContent = !textBlock.isContent
+		
+		true
+
 
 
 class RemoveNonContentBlocksFilter extends BaseFilter
@@ -570,8 +581,61 @@ class RemoveNonContentBlocksFilter extends BaseFilter
 		foundChanges 
 
 
-# MinWordsFilter
-# MinClauseWordsFilter
+class MinWordsFilter extends BaseFilter
+	
+	constructor: (minWords) ->
+		@minWords = minWords
+	
+	
+	process: (document) ->
+		foundChanges = false
+		
+		for textBlock in document.textBlocks
+			if textBlock.isContent and tb.getNumWords() < self.minWords
+				textBlock.isContent = false
+				foundChanges = true
+		
+		foundChanges
+
+
+class MinClauseWordsFilter extends BaseFilter
+	
+	#  since clauses should *always end* with a delimiter, we normally
+	#  don't consider text without one
+	
+	constructor: (minWords = 5, acceptClausesWithoutDelimiter = false) ->
+		@minWords = minWords
+		@acceptClausesWithoutDelimiter = acceptClausesWithoutDelimiter
+	
+	
+	process: (document) =>
+		foundChanges = false
+		
+		for textBlock in document.textBlocks
+			if textBlock.isContent
+				hasClause = false
+				
+				text = textBlock.text + ' '
+				possibleClauses = text.split /\b[\,\.\:\;\!\?]+(?:\s+|\Z)/
+				numberOfClauses = possibleClauses.length
+				
+				for possibleClause, currentIndex in possibleClauses
+					if currentIndex < numberOfClauses - 1 or @acceptClausesWithoutDelimiter
+						hasClause = @isClauseAccepted(possibleClause)
+						break if hasClause
+				
+				if !hasClause
+					textBlock.isContent = false
+					foundChanges = true
+		
+		foundChanges
+	
+	
+	isClauseAccepted: (text) ->
+		words = text.split(/\s+/)
+		words and words.length >= @minWords
+
+
 # SplitParagraphBlocksFilter
 # SurroundingToContentFilte
 # LabelToBoilerplateFilter
@@ -1160,6 +1224,7 @@ describe "parsing documents", ->
 		bodyText = "THIS IS CONTENT"
 		html = "<html><head><p>NOT IN BODY</p></head><body><p>" + bodyText + "</p></body></html>"
 		document = Boilerpipe.documentFromHTML html
+		
 		textArray = for textBlock in document.textBlocks
 			textBlock.text
 		
@@ -1175,6 +1240,37 @@ describe "parsing documents", ->
 			textBlock.text
 		
 		textArray.should.deep.equal [content[0], content[1], content[2] + content[3]]
+	
+	
+	it "blocks", ->
+		template = "<html><body><p>*</p><div>*<p>*</p>*</div></body></html>"
+		content = [4,5,6,7]
+		document = TestHelper.documentFromTemplate template, content
+		
+		textBlocks = document.textBlocks
+		textArray = for textBlock in textBlocks
+			textBlock.text
+			
+		numWords = for textBlock in textBlocks
+			textBlock.numWords
+		
+		expectedContent = content.map (item) ->
+			if typeof(item) == 'number' then TestHelper.exampleText item else item
+		
+		textArray.should.deep.equal expectedContent
+		numWords.should.deep.equal content
+	
+	
+	it "ignorable elements", ->
+		template = "<html><body><p>*</p><option><p>*</p></option></body></html>"
+		content = [10, 12]
+		document = TestHelper.documentFromTemplate template, content
+		
+		textBlocks = document.textBlocks
+		textArray = for textBlock in textBlocks
+			textBlock.text
+		
+		textArray.should.deep.equal [TestHelper.exampleText(10)]
 	
 	
 	it "block indexes", ->
@@ -1219,6 +1315,46 @@ describe "parsing documents", ->
 		block1.labels.should.deep.equal [TextBlock.MightBeContent, TextBlock.ArticleMetadata]
 		block1.offsetStart.should.equal 0
 		block1.offsetEnd.should.equal 1
+
+
+
+
+###
+Tests for individual filters
+###
+
+
+describe "MarkEverythingContentFilter", ->
+	
+	it "", ->
+		document = TestHelper.documentWithParameters [5, 100, 80], null, [false, true, false]
+		
+		isContentBefore = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		filter = new MarkEverythingContentFilter()
+		isChanged = filter.process(document)
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		isContentArray.should.deep.equal [true, true, true]
+
+
+
+describe "Inverted", ->
+	
+	it "inverts the isContent flag for each block", ->
+		document = TestHelper.documentWithParameters [5, 100, 80], null, [false, true, false]
+		
+		isContentBefore = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		filter = new InvertedFilter()
+		isChanged = filter.process(document)
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		isContentArray.should.deep.equal [true, false, true]
 
 
 
@@ -1281,6 +1417,22 @@ describe "NumWordsRulesClassifier", ->
 		isChanged = filter.process(document)
 		
 		document.textBlocks[1].isContent.should.be.true
+		isChanged.should.be.true
+
+
+
+describe "MinClauseWordsFilter", ->
+	
+	it "looks for clauses", ->
+		content = ["This is a clause, because it is separated by a comma.", "Real short", "Lots of, very, very, very, small, clauses.", "If acceptClausesWithoutDelimiter is false then clauses that don't end in punctuation don't count"]
+		document = TestHelper.documentWithParameters(content, null, [true, true, true, true])
+		filter = new MinClauseWordsFilter(5, false)
+		isChanged = filter.process(document)
+		
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		isContentArray.should.deep.equal [true, false, false, false]
 		isChanged.should.be.true
 
 
