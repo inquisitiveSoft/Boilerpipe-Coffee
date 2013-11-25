@@ -636,11 +636,67 @@ class MinClauseWordsFilter extends BaseFilter
 		words and words.length >= @minWords
 
 
-# SplitParagraphBlocksFilter
-# SurroundingToContentFilte
+
+class SplitParagraphBlocksFilter extends BaseFilter
+	
+	process: (document) ->
+		foundChanges = false
+		textBlocks= document.textBlocks
+		newBlocks = []
+		
+		for textBlock in textBlocks
+			paragraphs = textBlock.text.split /[\n\r]+/
+			
+			if paragraphs.length < 2
+				newBlocks.push textBlock
+			else
+				isContent = textBlock.isContent
+				labels = textBlock.labels
+				
+				for paragraph in paragraphs
+					newTextBlock = new TextBlock(paragraph)
+					newTextBlock.isContent = isContent
+					newTextBlock.labels = labels
+					newBlocks.push newTextBlock
+				
+				foundChanges = true
+				
+		document.textBlocks = newBlocks if foundChanges
+		foundChanges
+
+
+
+# class SurroundingToContentFilter extends BaseFilter
+# 	
+# 	constructor: (condition) ->
+# 		# condition is a function which can be passed in with 
+# 		# additional logic to determine if a block can be made content
+# 		@condition = condition or (textBlock) ->
+# 			textBlock.linkDensity == 0 and textBlock.numberOfClauses > 6
+# 	
+# 	process: (document) ->
+# 		tbs = doc.textBlocks
+# 		n=len(tbs)
+# 		hasChanges=False
+# 		i=1
+# 		while i<n-1:
+# 			prev=tbs[i-1]
+# 			cur=tbs[i]
+# 			next=tbs[i+1]
+# 			if not cur.isContent() and prev.isContent() and next.isContent() and self.cond(cur):
+# 				cur.setIsContent(True)
+# 				hasChanges = True
+# 				i+=2
+# 			else: i+=1
+# 			# WARNING: POSSIBLE BUG - in original i+=2 regardless of whether content is found.  this seems illogica to me - should be +=1
+# 
+# 		return hasChanges
+
 # LabelToBoilerplateFilter
 # LabelToContentFilter
 # 
+
+
 
 ###
 Heuristic Filters:
@@ -1031,7 +1087,11 @@ class Boilerpipe
 	@DefaultExtractor: "DefaultExtractor"
 	@ArticleExtractor: "ArticleExtractor"
 	@KeepEverythingExtractor: "KeepEverythingExtractor"
+	@LargestContentExtractor: "LargestContentExtractor"
+	@CanolaExtractor: "CanolaExtractor"
 	@Unfiltered: "Unfiltered"
+#	@Dynamic: "Dynamic"		# Chooses
+	
 	
 	
 	@documentFromHTML: (html, filterType) ->
@@ -1067,14 +1127,45 @@ class Boilerpipe
 				])
 				
 			
+			when Boilerpipe.LargestContentExtractor
+				###
+				A full-text extractor which extracts the largest text component of a page.
+				For news articles, it may perform better than the {@link DefaultExtractor},
+				but usually worse than {@link ArticleExtractor}.
+				###
+				
+				new FilterChain([
+					new NumWordsRulesClassifier(),
+					new BlockProximityFusion(1, false, false),
+					new KeepLargestBlockFilter()
+				])
+			
+			
+			when Boilerpipe.CanolaExtractor
+				###
+				Trained on krdwrd Canola (different definition of "boilerplate").
+				You may give it a try.
+				###
+				
+				new FilterChain([
+					new CanolaFilter(),
+				])
+			
+			
 			when Boilerpipe.KeepEverythingExtractor
+				###
+				Only really usefull for testing the parser
+				###
+				
 				new FilterChain([
 					new MarkEverythingContentFilter()
 				])
 			
 			
 			when Boilerpipe.Unfiltered
-				# Do nothing.
+				###
+				Do nothing
+				###
 			
 			else
 				###
@@ -1433,6 +1524,25 @@ describe "MinClauseWordsFilter", ->
 			textBlock.isContent
 		
 		isContentArray.should.deep.equal [true, false, false, false]
+		isChanged.should.be.true
+
+
+
+describe "SplitParagraphBlocksFilter", ->
+	
+	it "splits paragraphs intpo separate blocks", ->
+		document = TestHelper.documentWithParameters(["A single paragraph.","Multiple paragraphs.\n\nParagraph 2 is here."], null, [true, false])
+		filter = new SplitParagraphBlocksFilter()
+		isChanged = filter.process(document)
+		
+		textArray = for textBlock in document.textBlocks
+			textBlock.text
+		
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		textArray.should.deep.equal ["A single paragraph.","Multiple paragraphs.","Paragraph 2 is here."]
+		isContentArray.should.deep.equal [true, false, false]
 		isChanged.should.be.true
 
 

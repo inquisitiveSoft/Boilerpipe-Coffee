@@ -156,11 +156,67 @@ class MinClauseWordsFilter extends BaseFilter
 		words and words.length >= @minWords
 
 
-# SplitParagraphBlocksFilter
-# SurroundingToContentFilte
+
+class SplitParagraphBlocksFilter extends BaseFilter
+	
+	process: (document) ->
+		foundChanges = false
+		textBlocks= document.textBlocks
+		newBlocks = []
+		
+		for textBlock in textBlocks
+			paragraphs = textBlock.text.split /[\n\r]+/
+			
+			if paragraphs.length < 2
+				newBlocks.push textBlock
+			else
+				isContent = textBlock.isContent
+				labels = textBlock.labels
+				
+				for paragraph in paragraphs
+					newTextBlock = new TextBlock(paragraph)
+					newTextBlock.isContent = isContent
+					newTextBlock.labels = labels
+					newBlocks.push newTextBlock
+				
+				foundChanges = true
+				
+		document.textBlocks = newBlocks if foundChanges
+		foundChanges
+
+
+
+# class SurroundingToContentFilter extends BaseFilter
+# 	
+# 	constructor: (condition) ->
+# 		# condition is a function which can be passed in with 
+# 		# additional logic to determine if a block can be made content
+# 		@condition = condition or (textBlock) ->
+# 			textBlock.linkDensity == 0 and textBlock.numberOfClauses > 6
+# 	
+# 	process: (document) ->
+# 		tbs = doc.textBlocks
+# 		n=len(tbs)
+# 		hasChanges=False
+# 		i=1
+# 		while i<n-1:
+# 			prev=tbs[i-1]
+# 			cur=tbs[i]
+# 			next=tbs[i+1]
+# 			if not cur.isContent() and prev.isContent() and next.isContent() and self.cond(cur):
+# 				cur.setIsContent(True)
+# 				hasChanges = True
+# 				i+=2
+# 			else: i+=1
+# 			# WARNING: POSSIBLE BUG - in original i+=2 regardless of whether content is found.  this seems illogica to me - should be +=1
+# 
+# 		return hasChanges
+
 # LabelToBoilerplateFilter
 # LabelToContentFilter
 # 
+
+
 
 ###
 Heuristic Filters:
@@ -539,4 +595,25 @@ class DensityRulesClassifier extends BaseFilter
 		new TextBlock(null, null, null, null, null, null, null, -1)
 
 
-# CanolaFilter
+class CanolaFilter extends BaseFilter
+	
+	process: (document) ->
+		textBlocks = document.textBlocks
+		hasChanges = False
+		
+	# 	n=len(textBlocks)
+	# 	for i,currentBlock in enumerate(textBlocks):
+	# 		if i>0: prevBlock=textBlocks[i-1]
+	# 		else: prevBlock=document.TextBlock.EMPTY_START
+	# 		if i+1<n: nextBlock=textBlocks[i+1]
+	# 		else: nextBlock=document.TextBlock.EMPTY_START
+	# 		hasChanges |= self.classify(prevBlock, currentBlock, nextBlock)
+	# 	return hasChanges
+	# 
+	# def classify(self, prev, curr, next):
+	# 	""" generated source for method classify """
+	# 	cond1=curr.getLinkDensity() > 0 and next.getNumWords() > 11
+	# 	cond2=curr.getNumWords() > 19
+	# 	cond3=next.getNumWords() > 6 and next.getLinkDensity() == 0 and prev.getLinkDensity() == 0 and (curr.getNumWords() > 6 or prev.getNumWords() > 7 or next.getNumWords() > 19)
+	# 	isContent = cond1 or cond2 or cond3
+	# 	return curr.setIsContent(isContent)

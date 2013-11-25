@@ -8,7 +8,11 @@ class Boilerpipe
 	@DefaultExtractor: "DefaultExtractor"
 	@ArticleExtractor: "ArticleExtractor"
 	@KeepEverythingExtractor: "KeepEverythingExtractor"
+	@LargestContentExtractor: "LargestContentExtractor"
+	@CanolaExtractor: "CanolaExtractor"
 	@Unfiltered: "Unfiltered"
+#	@Dynamic: "Dynamic"		# Chooses
+	
 	
 	
 	@documentFromHTML: (html, filterType) ->
@@ -44,14 +48,45 @@ class Boilerpipe
 				])
 				
 			
+			when Boilerpipe.LargestContentExtractor
+				###
+				A full-text extractor which extracts the largest text component of a page.
+				For news articles, it may perform better than the {@link DefaultExtractor},
+				but usually worse than {@link ArticleExtractor}.
+				###
+				
+				new FilterChain([
+					new NumWordsRulesClassifier(),
+					new BlockProximityFusion(1, false, false),
+					new KeepLargestBlockFilter()
+				])
+			
+			
+			when Boilerpipe.CanolaExtractor
+				###
+				Trained on krdwrd Canola (different definition of "boilerplate").
+				You may give it a try.
+				###
+				
+				new FilterChain([
+					new CanolaFilter(),
+				])
+			
+			
 			when Boilerpipe.KeepEverythingExtractor
+				###
+				Only really usefull for testing the parser
+				###
+				
 				new FilterChain([
 					new MarkEverythingContentFilter()
 				])
 			
 			
 			when Boilerpipe.Unfiltered
-				# Do nothing.
+				###
+				Do nothing
+				###
 			
 			else
 				###

@@ -283,6 +283,25 @@ describe "MinClauseWordsFilter", ->
 
 
 
+describe "SplitParagraphBlocksFilter", ->
+	
+	it "splits paragraphs intpo separate blocks", ->
+		document = TestHelper.documentWithParameters(["A single paragraph.","Multiple paragraphs.\n\nParagraph 2 is here."], null, [true, false])
+		filter = new SplitParagraphBlocksFilter()
+		isChanged = filter.process(document)
+		
+		textArray = for textBlock in document.textBlocks
+			textBlock.text
+		
+		isContentArray = for textBlock in document.textBlocks
+			textBlock.isContent
+		
+		textArray.should.deep.equal ["A single paragraph.","Multiple paragraphs.","Paragraph 2 is here."]
+		isContentArray.should.deep.equal [true, false, false]
+		isChanged.should.be.true
+
+
+
 describe "IgnoreBlocksAfterContentFilter", ->
 		
 		it "", ->
