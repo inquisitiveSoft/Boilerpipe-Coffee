@@ -1,7 +1,11 @@
 #!/bin/bash
-coffeescript-concat -I source -I example -o build/Boilerpipe.coffee
-coffeescript-concat -I source -I example -o build/Boilerpipe-Example.coffee
-# coffee --compile build/Boilerpipe-Compiled.coffee
+
+#Build
+coffeescript-concat -I source -o "lib/Boilerpipe.coffee"
+coffeescript-concat -I source -I example -o "lib/Boilerpipe-Example.coffee"
+coffee --compile "lib/Boilerpipe.coffee"
+
+browserify --transform coffeeify --extension=".coffee" "lib/Boilerpipe-Example.coffee" -o "lib/Boilerpipe-Example.js"
 
 # Run
-coffee build/Boilerpipe-Example.coffee
+node "lib/Boilerpipe-Example.js"

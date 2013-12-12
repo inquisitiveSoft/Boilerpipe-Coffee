@@ -86,7 +86,7 @@ class TextBlock
 
 
 
-class TextDocument
+class BoilerpipeTextDocument
 	###
 	Text document encapsulates a title and a series of textBlocks
 	###
@@ -102,7 +102,7 @@ class TextDocument
 		@textBlocks.filter (textBlock) ->
 			textBlock.isContent
 	
-	#	  * Returns the TextDocument's content, non-content or both
+	#	  * Returns the BoilerpipeTextDocument's content, non-content or both
 	#	  * @param includeContent Whether to include TextBlocks marked as "content".
 	#	  * @param includeNonContent Whether to include TextBlocks marked as "non-content".
 	#	  * @return The text.

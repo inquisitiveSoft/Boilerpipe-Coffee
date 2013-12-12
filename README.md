@@ -8,9 +8,12 @@ Requirements
 ____________
 
 Requires the 'htmlparser2' node.js module
-In addintion the example requires 'fs', 'request', and 'path' modules
+
+In addition the example requires 'fs', 'request', and 'path' modules
+
 
 Building (combining into a single javascript file) requires `coffeescript-concat`
+
 Testing requires the `mocha` command line tool and the 'chai' module
 
 

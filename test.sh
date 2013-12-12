@@ -1,3 +1,3 @@
 #!/bin/bash
-coffeescript-concat -I source -I tests -o build/Boilerpipe-Test.coffee
-mocha --compilers coffee:coffee-script  build/Boilerpipe-Test.coffee
+coffeescript-concat -I source -I tests -o lib/Boilerpipe-Test.coffee
+mocha --compilers coffee:coffee-script  lib/Boilerpipe-Test.coffee

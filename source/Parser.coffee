@@ -1,6 +1,5 @@
 #= require <CommonExtensions.coffee>
-#= require TextBlock
-#= require TextDocument
+#= require <Document.coffee>
 
 htmlparser = require 'htmlparser2'
 
@@ -74,7 +73,7 @@ class BoilerpipeParser
 		@parser.parseComplete(html);
 		@endParsingDocument()
 		
-		new TextDocument(@title, @textBlocks)
+		new BoilerpipeTextDocument(@title, @textBlocks)
 	
 	
 	startParsingDocument: () ->

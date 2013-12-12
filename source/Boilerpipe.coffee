@@ -1,4 +1,5 @@
-#= require BoilerpipeParser
+#= require <Parser.coffee>
+#= require <Document.coffee>
 #= require <Filters.coffee>
 
 
@@ -101,4 +102,6 @@ class Boilerpipe
 					new DensityRulesClassifier()
 				])
 				
-		
+
+module.exports = Boilerpipe
+module.exports = BoilerpipeTextDocument

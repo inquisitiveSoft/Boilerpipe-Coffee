@@ -32,7 +32,7 @@ class TestHelper
 			
 			textBlocks.push(block)
 		
-		new TextDocument(null, textBlocks)
+		new BoilerpipeTextDocument(null, textBlocks)
 	
 	
 	
