@@ -1200,7 +1200,4 @@ class Boilerpipe
 					new BlockProximityFusion(1, false, false),
 					new DensityRulesClassifier()
 				])
-				
 
-module.exports = Boilerpipe
-module.exports = BoilerpipeTextDocument
