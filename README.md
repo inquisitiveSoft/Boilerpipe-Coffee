@@ -20,7 +20,7 @@ Testing requires the `mocha` command line tool and the 'chai' module
 Usage
 ----
 
-Sinplest example:
+Simplest example:
 
 	fs = require 'fs'
 	
