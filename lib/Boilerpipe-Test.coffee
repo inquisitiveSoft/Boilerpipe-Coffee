@@ -1200,10 +1200,7 @@ class Boilerpipe
 					new BlockProximityFusion(1, false, false),
 					new DensityRulesClassifier()
 				])
-				
 
-module.exports = Boilerpipe
-module.exports = BoilerpipeTextDocument
 
 
 class TestHelper
@@ -1553,7 +1550,7 @@ describe "MinClauseWordsFilter", ->
 
 describe "SplitParagraphBlocksFilter", ->
 	
-	it "splits paragraphs intpo separate blocks", ->
+	it "splits paragraphs into separate blocks", ->
 		document = TestHelper.documentWithParameters(["A single paragraph.","Multiple paragraphs.\n\nParagraph 2 is here."], null, [true, false])
 		filter = new SplitParagraphBlocksFilter()
 		isChanged = filter.process(document)
