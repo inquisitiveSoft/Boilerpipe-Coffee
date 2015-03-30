@@ -1202,6 +1202,8 @@ class Boilerpipe
 				])
 
 
+module.exports = Boilerpipe
+
 
 # fs = require 'fs'
 # request = require "request"

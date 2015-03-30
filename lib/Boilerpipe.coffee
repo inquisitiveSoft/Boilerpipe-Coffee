@@ -1201,3 +1201,5 @@ class Boilerpipe
 					new DensityRulesClassifier()
 				])
 
+
+module.exports = Boilerpipe

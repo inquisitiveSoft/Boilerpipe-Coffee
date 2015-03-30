@@ -1550,7 +1550,7 @@ describe "MinClauseWordsFilter", ->
 
 describe "SplitParagraphBlocksFilter", ->
 	
-	it "splits paragraphs into separate blocks", ->
+	it "splits paragraphs intpo separate blocks", ->
 		document = TestHelper.documentWithParameters(["A single paragraph.","Multiple paragraphs.\n\nParagraph 2 is here."], null, [true, false])
 		filter = new SplitParagraphBlocksFilter()
 		isChanged = filter.process(document)
