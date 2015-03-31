@@ -1221,7 +1221,7 @@ getContentFromHTML = (html) ->
 # 
 # 
 getContentFromFile = (filePath) ->
-	data = "html><body><div><p>Text</p></div></body></html>"
+	data = "<html><body><div><p>Text</p></div></body></html>"
 	getContentFromHTML(data)
 
 # 
